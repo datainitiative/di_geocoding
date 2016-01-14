@@ -39,6 +39,7 @@ admin.site.register(MatchLevel,MatchLevelAdmin)
 
 class ConfidenceLevelAdmin(admin.ModelAdmin):
     fields = ['score','name']
+    list_display= ['score','name']
 admin.site.register(ConfidenceLevel,ConfidenceLevelAdmin)
 
 class ProjectAdmin(admin.ModelAdmin):
