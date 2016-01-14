@@ -388,7 +388,7 @@ def geocoding_setup(request):
     ws = wb[sheet_names[0]]
     rownum = ws.get_highest_row()
     colnum = ws.get_highest_column()
-    colletter = str(_get_column_letter(colnum-1))
+    colletter = str(_get_column_letter(colnum))
     preview_range = "A1:%s11" % colletter
     preview_table = []
     for row in ws.iter_rows(preview_range):
