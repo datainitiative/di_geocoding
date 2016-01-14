@@ -2,3 +2,4 @@
 *.pyc
 *.pyo
 settings.py
+settings_server.py

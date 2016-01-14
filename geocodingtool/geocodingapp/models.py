@@ -153,7 +153,7 @@ class Task(models.Model):
 #    id = models.IntegerField(primary_key=True)
     description = models.CharField(max_length=200,null=True,blank=True)
     project = models.ForeignKey('Project')
-    initiate_date = models.DateField(auto_now=True,auto_now_add=True)
+    initiate_date = models.DateField(auto_now=True)
     note = models.TextField(max_length=500,null=True,blank=True)
     file = models.FileField(max_length=500,upload_to=STORAGE_ROOTPATH+"/upload/")
     has_result = models.BooleanField(default=False)

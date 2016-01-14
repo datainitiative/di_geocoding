@@ -109,7 +109,7 @@ STATIC_URL = '%s/static/' % STATIC_ROOT_URL
 # use this for localhost
 STORAGE_ROOTPATH = 'C:/QLiu/Devl/di_geocoding/geocodingtool/geocodingapp/static/data/'
 # use this for server
-#SOTRAGE_ROOTPATH = '/home/bitnami/apps/django/django_projects/geocoding/geocodingtool/geocodingapp/static/data/'
+#STORAGE_ROOTPATH = '/home/bitnami/apps/django/django_projects/geocoding/geocodingtool/geocodingapp/static/data/'
 
 # Login URL
 LOGIN_URL = '/admin/login/' # use this for localhost
