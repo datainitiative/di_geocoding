@@ -176,7 +176,7 @@ class Task(models.Model):
             return Task.objects.get(id=next_id)
         except:
             return None
-
+        
     class Meta:
         db_table = u'task'
         ordering = ['id']

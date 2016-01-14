@@ -52,14 +52,15 @@
                                     <th>Geocoder</th>
                                     <th>Confidence Level</th>
                                     <th>Accuracy</th>
+                                    <th>Edit</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for r in task_results %}
                                     <tr class="gradeA" role="row">
-                                        <td>{{r.name}}&nbsp;&nbsp;<a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
+                                        <td>{{r.name}}</td>
                                         <td>{{r.address}}</td>
-                                        <td>{{r.location.lat}},{{r.location.lng}}&nbsp;&nbsp;<a href="{% url 'admin:index' %}geocodingapp/point/{{r.location.id}}/" target="_blank" title="Edit Coordinates"><i class="fa fa-edit fa-lg"></i></a></td>
+                                        <td>{{r.location.lat}},{{r.location.lng}}</td>
                                         <td>{{r.geocoder}}</td>
                                         {% if r.confidence_level.score > 7 %}
                                             <td>{{r.confidence_level.score}}</td>
@@ -67,6 +68,7 @@
                                             <td><span class="text-danger"><strong>{{r.confidence_level.score}}</strong></span></td>
                                         {% endif %}
                                         <td>{{r.accuracy}}</td>
+                                        <td><a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
