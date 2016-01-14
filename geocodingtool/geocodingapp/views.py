@@ -288,8 +288,11 @@ def api_geocoding(address):
                         try:
                             confidence_level = g.geojson['properties']['confidence']
                         except:
-                            confidence_level = 0                            
-                        bbox = round(math.sqrt((g.geojson['bbox']['northeast'][0] - g.geojson['bbox']['southwest'][0])**2 + (g.geojson['bbox']['northeast'][1] - g.geojson['bbox']['southwest'][1])**2),8)
+                            confidence_level = 0
+                        try:
+                            bbox = round(math.sqrt((g.geojson['bbox']['northeast'][0] - g.geojson['bbox']['southwest'][0])**2 + (g.geojson['bbox']['northeast'][1] - g.geojson['bbox']['southwest'][1])**2),8)
+                        except:
+                            bbox = None
                         if confidence_level >= highest_confidence_level:
                             if confidence_level == highest_confidence_level:
                                 print "bbox: ", bbox
