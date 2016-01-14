@@ -38,7 +38,7 @@ class MatchLevelAdmin(admin.ModelAdmin):
 admin.site.register(MatchLevel,MatchLevelAdmin)
 
 class ConfidenceLevelAdmin(admin.ModelAdmin):
-    fields = ['socre','name']
+    fields = ['score','name']
 admin.site.register(ConfidenceLevel,ConfidenceLevelAdmin)
 
 class ProjectAdmin(admin.ModelAdmin):
