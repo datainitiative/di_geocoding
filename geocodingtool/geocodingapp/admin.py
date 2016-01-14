@@ -48,6 +48,7 @@ admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
     fields = ['description','project','note','initiate_date','file','has_result']
+    list_display = ['description','project','initiate_date','has_result']
     readonly_fields = ['initiate_date','has_result']
 admin.site.register(Task,TaskAdmin)
 
