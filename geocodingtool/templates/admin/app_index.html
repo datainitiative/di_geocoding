@@ -8,10 +8,11 @@
 {% if user|has_group:"Superuser" %}
 <li><a href="{% url 'admin:index' %}">{% trans 'Superuser Admin Home' %}</a></li>
 {% endif %}
-{% if user|has_group:"MHC Admin" %}
+{% if user|has_group:"Staff Admin" %}
 {% for app in app_list %}
-<li>Admin</li>
+<li>{{app.name}} Admin</li>
 {% endfor %}
+<!--
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/indicator/">Indicator (Admin)</a></li>
 {% endif %}
 <li><a href="{% setting 'ROOT_APP_URL' %}/indicator/">Indicator</a></li>
@@ -27,6 +28,7 @@
 {% endif %}
   Output</a>
 </li>
+-->
 </ul>
 {% endblock %}
 {% endif %}

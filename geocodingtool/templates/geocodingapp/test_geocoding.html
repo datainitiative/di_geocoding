@@ -1,0 +1,212 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+{% block title %}Geocoding | Geocoding Tool{% endblock %}
+{% block extrastyle %}
+<!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />-->
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.css" />
+<!-- Esri Leaflet Geocoder -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.css">
+<!-- Prune Cluster -->
+<link rel="stylesheet" href="{% static 'prunecluster/LeafletStyleSheet.css' %}">
+<style>
+#map { height: 600px; }
+.panel-heading-link { color: #FFF!important;}
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class='breadcrumb'>
+<li><a href="{% setting 'ROOT_APP_URL' %}/home/">{% trans 'Home' %}</a></li>
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<br/><br/>
+<div id="content-main">
+  <div class="row">
+		<div class="col-lg-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+                    <a data-toggle="collapse" href="#mapview" class="panel-heading-link" id="mapviewswitch">View on the Map (click to hide)</a>
+				</div>
+                <div id="mapview" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <div>
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- footer
+				<a href="{% setting 'ADMIN_ROOT_URL' %}">
+					<div class="panel-footer">
+						<span class="pull-left">link</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+                -->
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block bottomjs %}
+{{ block.super }}
+<!--<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>-->
+<script src="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.js"></script>
+<!-- Esri Leaflet -->
+<script src="//cdn.jsdelivr.net/leaflet.esri/2.0.0-beta.6/esri-leaflet.js"></script>
+<!-- Esri Leaflet Geocoder -->
+<script src="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.js"></script>
+<!-- Prune Cluster -->
+<script src='{% static "prunecluster/PruneCluster.js"%}'></script>
+<!-- page JS -->
+<script>
+$('#mapviewswitch').click(function(){
+    $(this).html(function(){
+        return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'show)' : 'hide)');
+    });
+});
+</script>
+<!-- Map JS -->
+<script>
+    var map = L.map('map',{maxZoom:16}).setView([39.7645187,-104.9951944], 11);
+    var Esri_WorldGrayCanvas = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16
+    }).addTo(map);
+    var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+        attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+    }).addTo(map);
+    
+    // ESRI Leaflet
+    var arcgisOnline = L.esri.Geocoding.arcgisOnlineProvider();
+    // create the geocoding control and add it to the map
+    var searchControl = L.esri.Geocoding.geosearch({
+        providers: [arcgisOnline],
+        position: 'topright'
+    }).addTo(map);
+    // create an empty layer group to store the results and add it to the map
+    var results = L.layerGroup().addTo(map);
+    // listen for the results event and add every result to the map
+    searchControl.on("results", function(data) {
+        results.clearLayers();
+        for (var i = data.results.length - 1; i >= 0; i--) {
+            results.addLayer(L.marker(data.results[i].latlng));
+        };
+    });
+    
+    // Map Functions
+    var map_points = {{g_points}};
+    map.fitBounds(map_points,{padding:[2,2]});
+    // Prune Cluster
+    var leafletView = new PruneClusterForLeaflet();
+    var markers = [];
+    $.each(map_points,function(index,p){
+        var marker = new PruneCluster.Marker(p[0],p[1]);
+        markers.push(marker);
+        leafletView.RegisterMarker(marker);
+    });
+    map.addLayer(leafletView);
+</script>
+<!--
+<script src='{% static "flot/excanvas.min.js"%}'></script>
+<script src='{% static "flot/jquery.flot.js"%}'></script>
+<script src='{% static "flot/jquery.flot.pie.js"%}'></script>
+<script src='{% static "flot.tooltip/js/jquery.flot.tooltip.min.js"%}'></script>
+<script>
+//Flot Pie Chart Data
+$(function() {
+    var data = jQuery.parseJSON('{{piechart_data|safe}}');
+
+    var plotObj = $.plot($("#flot-pie-chart"), data, {
+        series: {
+            pie: {
+                show: true
+            }
+        },
+        grid: {
+            hoverable: true
+        },
+        tooltip: true,
+        tooltipOpts: {
+            content: "%p.0%, %s", // show percentages, rounding to 2 decimal places
+            shifts: {
+                x: 20,
+                y: 0
+            },
+            defaultTheme: false
+        }
+    });
+});
+</script>
+-->
+
+<!-- Pie and Bar Tables JavaScript -->
+<!--
+<script src='{% static "d3-3.5.5/d3.min.js" %}'></script>
+<script src='{% static "customdashboard/barandpiechart/barandpiechart.js"%}'></script>
+<script src='{% static "customdashboard/barandpiechart/barandpiechart2.js"%}'></script>
+<script>
+var barAndPieChartData1All = jQuery.parseJSON('{{barpiechart_data_1_all|safe}}');
+var barAndPieChartData1Goal = jQuery.parseJSON('{{barpiechart_data_1_goal|safe}}');
+var barAndPieChartData2 = jQuery.parseJSON('{{barpiechart_data_2|safe}}');
+var barAndPieChartData2Q1 = jQuery.parseJSON('{{barpiechart_data_2_q1|safe}}');
+var barAndPieChartData2Q2 = jQuery.parseJSON('{{barpiechart_data_2_q2|safe}}');
+var barAndPieChartData2Q3 = jQuery.parseJSON('{{barpiechart_data_2_q3|safe}}');
+var barAndPieChartData2Q4 = jQuery.parseJSON('{{barpiechart_data_2_q4|safe}}');
+dashboard('#bar-pie-chart',barAndPieChartData1All);
+dashboard2('#bar-pie-chart2',barAndPieChartData2);
+
+$("#bar-pie-chart-1-checkbox").change(function(){
+  if($(this).is(":checked")){
+    $("#bar-pie-chart").empty();
+    dashboard('#bar-pie-chart',barAndPieChartData1Goal);
+  }
+  else
+  {
+    $("#bar-pie-chart").empty();
+    dashboard('#bar-pie-chart',barAndPieChartData1All);
+  }
+});
+
+$("#bar-pie-chart-2-select").change(function(){
+    if($("#bar-pie-chart-2-select option:selected").val() == "1"){
+        $("#bar-pie-chart2").empty();
+        dashboard2('#bar-pie-chart2',barAndPieChartData2Q1);
+    }
+    else if($("#bar-pie-chart-2-select option:selected").val() == "2"){
+        $("#bar-pie-chart2").empty();
+        dashboard2('#bar-pie-chart2',barAndPieChartData2Q2);
+    }
+    else if($("#bar-pie-chart-2-select option:selected").val() == "3"){
+        $("#bar-pie-chart2").empty();
+        dashboard2('#bar-pie-chart2',barAndPieChartData2Q3);
+    }
+    else if($("#bar-pie-chart-2-select option:selected").val() == "4"){
+        $("#bar-pie-chart2").empty();
+        dashboard2('#bar-pie-chart2',barAndPieChartData2Q4);
+    }
+    else if($("#bar-pie-chart-2-select option:selected").val() == "0"){
+        $("#bar-pie-chart2").empty();
+        dashboard2('#bar-pie-chart2',barAndPieChartData2);
+    }
+});
+</script>
+-->
+<!-- Data Tables JavaScript -->
+<!--
+<script src='{% static "datatables/media/js/jquery.dataTables.min.js"%}'></script>
+<script src='{% static "datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"%}'></script>
+<script>
+$(document).ready(function() {
+	$('#data-table').DataTable({
+			responsive: true
+	});
+});
+</script>
+-->
+{% endblock %}

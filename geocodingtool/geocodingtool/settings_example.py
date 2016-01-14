@@ -67,9 +67,9 @@ WSGI_APPLICATION = 'geocodingtool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'DBNAME',
-        'USER': 'DBUSER',
-        'PASSWORD': 'DBPW',
+        'NAME': 'dbname',
+        'USER': 'user',
+        'PASSWORD': 'pw',
         'HOST': 'localhost',#'/opt/bitnami/postgresql' for aws
         'PORT': '5432'        
     }
@@ -88,6 +88,11 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Template context processors
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
@@ -102,7 +107,7 @@ STATIC_ROOT_URL = '/geocodingtool'
 STATIC_URL = '%s/static/' % STATIC_ROOT_URL
 
 # use this for localhost
-SOTRAGE_ROOTPATH = 'C:/QLiu/ql_dj/apps/GeoCodingTool/geocodingtool/geocodingapp/static/data/'
+STORAGE_ROOTPATH = 'C:/QLiu/Devl/di_geocoding/geocodingtool/geocodingapp/static/data/'
 # use this for server
 #SOTRAGE_ROOTPATH = '/home/bitnami/apps/django/django_projects/geocoding/geocodingtool/geocodingapp/static/data/'
 
@@ -177,3 +182,28 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning warning',
     messages.ERROR: 'alert-danger error'
 }
+
+## Geocoder API Keys
+# Google: 2500 free requests per day; 10 requests per second.
+# g = geocoder.google('address',[key=])
+GOOGLE_API_KEY = "GOOGLE_API_KEY"
+
+# OpenStreeMap: max of 1 request per second. No key needed.
+# g = geocoder.osm('address')
+OSM_API_KEY = ""
+
+# ArcGIS: Free per one request. Need a key from GISOnline account later.
+# g = geocoder.arcgis('address',[key=])
+ARCGIS_API_KEY = ""
+
+# Bing: Public website: Max 125000 cumulative billable transactions within any 12-month period at no charge.
+# g = geocoder.bing('address',key=)
+BING_API_KEY = "BING_API_KEY"
+
+# Mapbox: Free one geocode per request.
+# g = geocoder.mapbox('address',key=)
+MAPBOX_API_KEY = "MAPBOX_API_KEY"
+
+# MapQuest: 15000 transactions per month. No bounding box, thus no confidence level.
+# g = geocoder.mapquest('address',key=)
+MAPQUEST_API_KEY = "MAPQUEST_API_KEY"

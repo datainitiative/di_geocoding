@@ -9,6 +9,21 @@ from django.contrib.auth.views import logout
 urlpatterns = patterns('geocodingapp.views',
 	# Home page URL
 	url(r'^home/$','home'),
+	
+	# Function URLs
+	url(r'^api/geocoding/$','api_geocoding'),
+	url(r'instant_geocoding/','instant_geocoding'),
+	url(r'^geocoding/setup$','geocoding_setup'),
+	url(r'^geocoding/start$','start_geocoding'),
+	url(r'^geocoding/results$','geocoding_result'),
+	url(r'^geocoding/download_results/(?P<task_id>\d+)/$','exportcsv_geocodingresults'),
+	
+	# Test geocoding URL
+	url(r'^geocoding/test$','test_geocoding'),
+	
+	# URLs for importing geography
+	url(r'^import/geo/county/$','import_geo_county'),
+	url(r'^import/geo/city/$','import_geo_city'),
 
 #	# Login,Logout,Register,User
 #	url(r'^logout/$',logout,{'template_name': 'registration/logged_out.html'}),

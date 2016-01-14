@@ -7,7 +7,11 @@
 {{ media }}
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />{% endblock %}
+{% block extrastyle %}
+	{{ block.super }}
+	<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+	<link rel="stylesheet" type="text/css" href="{% static "font-awesome-4.5.0/css/font-awesome.min.css" %}" />
+{% endblock %}
 
 {% block coltype %}{% if ordered_objects %}colMS{% else %}colM{% endif %}{% endblock %}
 
@@ -20,6 +24,12 @@
 {% if user|has_group:"Superuser" %}
 <li><a href="{% url 'admin:index' %}">{% trans 'Superuser Admin Home' %}</a></li>
 {% endif %}
+{% if user|has_group:"Staff Admin" %}
+<li><a href="{% url 'admin:index' %}{{app_label}}/">{{app_label|capfirst}} Admin</a></li>
+{% endif %}
+<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/">Project</a></li>
+<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/">Task</a></li>
+<!--
 {% if user|has_group:"MHC Admin" %}
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/">Admin</a></li>
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/indicator/">Indicator (Admin)</a></li>
@@ -37,6 +47,7 @@
 {% endif %}
   Output</a>
 </li>
+-->
 </ul>
 {% endblock %}
 {% endif %}
@@ -110,7 +121,7 @@
             })(django.jQuery);
         </script>
         {% endif %}
-
+        
         {# JavaScript for prepopulated fields #}
         {% prepopulated_fields_js %}
 
@@ -119,8 +130,42 @@
 
     <div class="form-actions">
 		{% if has_add_permission %}
-        {% block submit_buttons_bottom %}{% submit_row %}{% endblock %}
+        {% block submit_buttons_bottom %}
+			{% submit_row %}
+			{% if opts.model_name == 'task' %}
+				{% if not add %}
+					<div class="row">
+						<div class="col-lg-12 col-mg-12">
+                            <br/>
+                            {% if adminform.form.instance.has_result %}
+                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{original.id}}" target="_blank"><i class="fa fa-arrow-circle-right fa-lg"></i> View Geocoding Results</a>
+                            {% else %}
+                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/setup?task={{original.id}}" target="_blank"><i class="fa fa-arrow-circle-right fa-lg"></i> Setup Geocoding</a>
+                            {% endif %}
+                            <br/>
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
+            {% if opts.model_name == "project" and not add %}
+                <div class="row">
+                    <div class="col-lg-12 col-mg-12">
+                        <br/>
+                        <a class="btn btn-success btn-lg btn-block" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{original.id}}" target="_blank"><i class="fa fa-plus-circle fa-lg"></i> Add Geocoding Task</a>
+                        <br/>
+                    </div>
+                </div>
+            {% endif %}
+		{% endblock %}
 		{% endif %}
     </div>
 </form>
+
+{% if opts.model_name == "task" and add %}
+    <script type="text/javascript">
+        var current_url = "{{ request.get_full_path }}";
+        var project_id = parseInt(current_url.substring(current_url.indexOf("?project=")+"?project=".length));
+        $("#id_project").val(project_id);
+    </script>
+{% endif %}
 {% endblock %}
