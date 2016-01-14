@@ -451,7 +451,10 @@ def start_geocoding(request):
     print result_headers_index
     result_list = []
     for row in ws.iter_rows(row_offset=1):
-        label = row[result_headers_index[0]].value.encode('utf-8').strip()
+        if ((row[result_headers_index[0]].value) is int) or (type(row[result_headers_index[0]].value) is long):
+            label = str(row[result_headers_index[0]].value)
+        else:
+            label = row[result_headers_index[0]].value.encode('utf-8').strip()
         address = u""
         for col in result_headers_index[1:]:
             if (type(row[col].value) is int) or (type(row[col].value) is long):
