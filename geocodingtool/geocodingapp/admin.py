@@ -3,7 +3,7 @@ import os
 from django.contrib import admin
 from django.utils.html import mark_safe
 
-from geocodingtool.settings import ADMIN_ROOT_URL
+from geocodingtool.settings import ADMIN_ROOT_URL, ROOT_APP_URL
 from geocodingapp.models import *
 
 class StateAdmin(admin.ModelAdmin):
@@ -50,7 +50,7 @@ class TaskInline(admin.TabularInline):
     model = Task
     extra = 0
     max_num = 0
-    readonly_fields = ['description','project','file_name','initiate_date','has_result','change_link']
+    readonly_fields = ['description','project','file_name','initiate_date','has_result','change_link','geocoding_result_link']
     can_delete = False
     exclude = ('file','note',)
     
@@ -62,6 +62,12 @@ class TaskInline(admin.TabularInline):
         return mark_safe('<a href="%s/admin/geocodingapp/task/%s/" target="_blank" title="Edit"><i class="fa fa-edit fa-lg"></i></a>' % (ADMIN_ROOT_URL,obj.id))
     change_link.short_description = "Edit"
     
+    def geocoding_result_link(self, obj):
+        if obj.has_result:
+            return mark_safe('<a href="%s/geocoding/results?task=%s" target="_blank" title="View Geocoding Results"><i class="fa fa-map-marker fa-lg"></i></a>' % (ROOT_APP_URL,obj.id))
+        else:
+            return mark_safe('<a href="%s/geocoding/setup?task=%s" title="Go Geocoding"><i class="fa fa-arrow-circle-right fa-lg"></i></a>' % (ROOT_APP_URL,obj.id))
+    geocoding_result_link.short_description = "Results"  
 
 class ProjectAdmin(admin.ModelAdmin):
     fields = ['title','description','category','url','start_date','end_date']
