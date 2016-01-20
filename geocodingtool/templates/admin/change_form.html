@@ -148,9 +148,9 @@
 						<div class="col-lg-12 col-mg-12">
                             <br/>
                             {% if adminform.form.instance.has_result %}
-                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{original.id}}" target="_blank"><i class="fa fa-arrow-circle-right fa-lg"></i> View Geocoding Results</a>
+                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{original.id}}"><i class="fa fa-arrow-circle-right fa-lg"></i> View Geocoding Results</a>
                             {% else %}
-                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/setup?task={{original.id}}" target="_blank"><i class="fa fa-arrow-circle-right fa-lg"></i> Setup Geocoding</a>
+                                <a class="btn btn-success btn-lg btn-block" href="{% setting 'ROOT_APP_URL' %}/geocoding/setup?task={{original.id}}"><i class="fa fa-arrow-circle-right fa-lg"></i> Setup Geocoding</a>
                             {% endif %}
                             <br/>
 						</div>
