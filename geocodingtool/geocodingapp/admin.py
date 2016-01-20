@@ -52,7 +52,6 @@ class TaskInline(admin.TabularInline):
     max_num = 0
     readonly_fields = ['description','project','file_name','initiate_date','has_result','change_link']
     can_delete = False
-    show_change_link = True
     exclude = ('file','note',)
     
     def file_name(self, obj):
