@@ -73,12 +73,15 @@
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Welcome,' %} <strong>{% filter force_escape %}{% firstof user.get_short_name user.get_username user.first_name user.username %}{% endfilter %}</strong> <span class="caret"></span></a>
                             <ul class="dropdown-menu">
+                                <!--
                                 <li><a href="{% setting 'ROOT_APP_URL' %}/user/profile"><i class="fa fa-user"></i> {% trans 'User Profile' %}</a></li>
+                                -->
                                 {% if user.has_usable_password %}
                                 <!--
                                 <li><a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a></li>
                                 -->
                                 {% endif %}
+                                <!--
 								{% if user|has_group:"Steering Committee Staff" %}
 								{% else %}
 									<li><a href="{% setting 'ROOT_APP_URL' %}/output/report/"><i class="fa fa-edit"></i> Report Activity Output</a></li>
@@ -89,6 +92,7 @@
 								{% if user|has_group:"Superuser" or user|has_group:"MHC Admin" or user|has_group:"Priority Area Coordinator" %}
 									<li><a href="{% setting 'ROOT_APP_URL' %}/output/report/exportbuilder"><i class="fa fa-download"></i> Download Output</a></li>
 								{% endif %}
+                                -->
                                 <li><a href="{% url 'admin:logout' %}"><i class="fa fa-sign-out"></i> {% trans 'Sign Out' %}</a></li>
                             </ul>
                         </li>
