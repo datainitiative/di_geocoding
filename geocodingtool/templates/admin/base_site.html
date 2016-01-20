@@ -2,19 +2,7 @@
 {% load custom_filter %}{% load custom_tag %}
 {% block title %}{{ title }} | GeocodingTool{% endblock %}
 {% block extrahead %}
-<script>
-  (function($) {
-    $(document).ready(function() {
-      $(".add-related, .change-related").attr(
-        "onclick",
-        "event.preventDefault();grp.onclickRelatedWorkaround(this)"
-      )
-    });
-    grp.onclickRelatedWorkaround = function(el) {
-      if ($(el).attr("href") != null) { showAddAnotherPopup(el) }
-    }
-  })(grp.jQuery);
-</script>
+
 {% endblock %}
 {% block branding %}
 <h1 id="site-name"><a href="{% setting 'ROOT_APP_URL' %}/home/">GeocodingTool</a></h1>
