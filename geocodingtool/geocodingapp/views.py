@@ -508,10 +508,11 @@ def geocoding_result(request):
     task = Task.objects.get(id=task_id)
     task_results = GeocodingResult.objects.filter(task=task)
     points = []
+    points_wlabels = []
     for result in task_results:
         points.append([result.location.lat,result.location.lng])
-    print points
-    return {"task_id":task_id,"task_results":task_results,"g_points":points}
+        points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
 
 
 # Export Results as CSV file

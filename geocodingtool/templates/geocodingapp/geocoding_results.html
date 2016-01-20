@@ -164,12 +164,14 @@ $('#mapviewswitch').click(function(){
     
     // Map Functions
     var map_points = {{g_points}};
+    var data_points = jQuery.parseJSON('{{data_points|safe}}');
     map.fitBounds(map_points,{padding:[2,2]});
     // Prune Cluster
     var leafletView = new PruneClusterForLeaflet();
     var markers = [];
-    $.each(map_points,function(index,p){
+    $.each(data_points,function(index,p){
         var marker = new PruneCluster.Marker(p[0],p[1]);
+        marker.data.popup = p[2];
         markers.push(marker);
         leafletView.RegisterMarker(marker);
     });
