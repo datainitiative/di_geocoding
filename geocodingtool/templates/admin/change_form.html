@@ -3,14 +3,17 @@
 {% load custom_filter %}{% load custom_tag %}
 {% block extrahead %}{{ block.super }}
 {% url 'admin:jsi18n' as jsi18nurl %}
-<script type="text/javascript" src="{{ jsi18nurl|default:"../../../jsi18n/" }}"></script>
+<script type="text/javascript" src='{{ jsi18nurl|default:"../../../jsi18n/" }}'></script>
 {{ media }}
 {% endblock %}
 
 {% block extrastyle %}
 	{{ block.super }}
-	<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
-	<link rel="stylesheet" type="text/css" href="{% static "font-awesome-4.5.0/css/font-awesome.min.css" %}" />
+	<link rel="stylesheet" type="text/css" href='{% static "admin/css/forms.css" %}' />
+	<link rel="stylesheet" type="text/css" href='{% static "font-awesome-4.5.0/css/font-awesome.min.css" %}' />
+    <style>
+        .table {margin-bottom: 0px!important;}
+    </style>
 {% endblock %}
 
 {% block coltype %}{% if ordered_objects %}colMS{% else %}colM{% endif %}{% endblock %}
@@ -95,6 +98,13 @@
     <div id="content-main">
         <div>
         {% if is_popup %}<input type="hidden" name="_popup" value="1" />{% endif %}
+        
+        {% if opts.model_name == "project" and not add %}
+            <h3>Project #{{original.id}}</h3>
+        {% endif %}
+        {% if opts.model_name == "task" and not add %}
+        <h3>Task #{{original.id}} | Under project <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/{{original.project.id}}" target="_blank">{{original.project.title}}</a></h3>
+        {% endif %}
 
         {% block field_sets %}
         {% for fieldset in adminform %}
@@ -151,7 +161,7 @@
                 <div class="row">
                     <div class="col-lg-12 col-mg-12">
                         <br/>
-                        <a class="btn btn-success btn-lg btn-block" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{original.id}}" target="_blank"><i class="fa fa-plus-circle fa-lg"></i> Add Geocoding Task</a>
+                        <a class="btn btn-success btn-lg btn-block" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{original.id}}" target="_blank"><i class="fa fa-plus-circle fa-lg"></i> Add New Geocoding Task</a>
                         <br/>
                     </div>
                 </div>
@@ -160,6 +170,22 @@
 		{% endif %}
     </div>
 </form>
+
+{% if opts.model_name == "project" and add %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("._inline-group").hide();
+        });
+    </script>
+{% endif %}
+
+{% if opts.model_name == "project" and not add %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("fieldset").find("h2").html("Task List");
+        });
+    </script>
+{% endif %}
 
 {% if opts.model_name == "task" and add %}
     <script type="text/javascript">

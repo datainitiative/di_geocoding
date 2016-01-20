@@ -1,5 +1,9 @@
-from django.contrib import admin
+import os
 
+from django.contrib import admin
+from django.utils.html import mark_safe
+
+from geocodingtool.settings import ADMIN_ROOT_URL
 from geocodingapp.models import *
 
 class StateAdmin(admin.ModelAdmin):
@@ -42,10 +46,29 @@ class ConfidenceLevelAdmin(admin.ModelAdmin):
     list_display= ['score','name']
 admin.site.register(ConfidenceLevel,ConfidenceLevelAdmin)
 
+class TaskInline(admin.TabularInline):
+    model = Task
+    extra = 0
+    max_num = 0
+    readonly_fields = ['description','project','file_name','initiate_date','has_result','change_link']
+    can_delete = False
+    show_change_link = True
+    exclude = ('file','note',)
+    
+    def file_name(self, obj):
+        return os.path.basename(obj.file.name)
+    file_name.short_description = "File Name"
+    
+    def change_link(self, obj):
+        return mark_safe('<a href="%s/admin/geocodingapp/task/%s/" target="_blank" title="Edit"><i class="fa fa-edit fa-lg"></i></a>' % (ADMIN_ROOT_URL,obj.id))
+    change_link.short_description = "Edit"
+    
+
 class ProjectAdmin(admin.ModelAdmin):
     fields = ['title','description','category','url','start_date','end_date']
     list_display = ['title','description','category','start_date','end_date']
     list_filter = ['category']
+    inlines = [TaskInline,]
 admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
