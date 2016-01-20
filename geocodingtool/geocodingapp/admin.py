@@ -78,9 +78,17 @@ admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
     fields = ['description','project','note','initiate_date','file','has_result']
-    list_display = ['description','project','initiate_date','has_result']
+    list_display = ['description','project','initiate_date','has_result','geocoding_result_link']
     list_filter = ['project','has_result']
     readonly_fields = ['initiate_date','has_result']
+    
+    def geocoding_result_link(self, obj):
+        if obj.has_result:
+            return mark_safe('<a href="%s/geocoding/results?task=%s" target="_blank" title="View Geocoding Results"><i class="fa fa-map-marker fa-lg"></i></a>' % (ROOT_APP_URL,obj.id))
+        else:
+            return mark_safe('<a href="%s/geocoding/setup?task=%s" title="Go Geocoding"><i class="fa fa-arrow-circle-right fa-lg"></i></a>' % (ROOT_APP_URL,obj.id))
+    geocoding_result_link.short_description = "Results" 
+    
 admin.site.register(Task,TaskAdmin)
 
 class AddressAdmin(admin.ModelAdmin):
