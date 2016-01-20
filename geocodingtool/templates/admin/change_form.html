@@ -194,4 +194,12 @@
         $("#id_project").val(project_id);
     </script>
 {% endif %}
+
+{% if opts.model_name == "task" and not add %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("p.file-upload").find("a").removeAttr("href").css('color', '#666').css('text-decoration', 'none');
+        });
+    </script>
+{% endif %}
 {% endblock %}
