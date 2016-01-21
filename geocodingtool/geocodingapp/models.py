@@ -73,12 +73,30 @@ class ProjectCategory(models.Model):
 class Geocoder(models.Model):
 #    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=200)
+    limit = models.IntegerField(default=-1) # -1 stands for unlimited geocoding requests
 
     def __unicode__(self):
         return unicode(self.name)
+    
+    def previous(self):
+        try:
+            previous_records = Geocoder.objects.filter(id__lt=self.id)
+            previous_id = previous_records.order_by('-id')[0].id
+            return Geocoder.objects.get(id=previous_id)
+        except:
+            return None
+        
+    def next(self):
+        try:
+            next_records = Geocoder.objects.filter(id__gt=self.id)
+            next_id = next_records.order_by('id')[0].id
+            return Geocoder.objects.get(id=next_id)
+        except:
+            return None    
 
     class Meta:
         db_table = u'geocoder'
+        ordering = ['id']
         
 # Model Location Type
 class LocationType(models.Model):
@@ -315,4 +333,35 @@ class FormattedAddress(models.Model):
 
     class Meta:
         db_table = u'formatted_address'
+        ordering = ['id']
+        
+# Geocoder Usage
+class GeocoderUsage(models.Model):
+#    id = models.IntegerField(primary_key=True)
+    geocoder = models.ForeignKey('Geocoder')
+    geocoding_record_num = models.IntegerField(default=0)
+    last_geocoding_time = models.DateTimeField(auto_now=True)
+    has_expired = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return str(self.id)
+    
+    def previous(self):
+        try:
+            previous_records = GeocoderUsage.objects.filter(id__lt=self.id)
+            previous_id = previous_records.order_by('-id')[0].id
+            return GeocoderUsage.objects.get(id=previous_id)
+        except:
+            return None
+        
+    def next(self):
+        try:
+            next_records = GeocoderUsage.objects.filter(id__gt=self.id)
+            next_id = next_records.order_by('id')[0].id
+            return GeocoderUsage.objects.get(id=next_id)
+        except:
+            return None
+
+    class Meta:
+        db_table = u'geocoder_usage'
         ordering = ['id']

@@ -36,6 +36,9 @@ from openpyxl.utils import (_get_column_letter)
 '''-----------------------
 Home Page
 -----------------------'''
+def update_geocoder_usage():
+    return {}
+
 # Home page
 @login_required
 @render_to("geocodingapp/home.html")
@@ -44,9 +47,36 @@ def home(request):
     num_project = len(projects)
     tasks = Task.objects.all()
     num_task = len(tasks)
+    geocoders = Geocoder.objects.all()
+    geocoder_status = []
+    for geocoder in geocoders:
+        if geocoder.limit == -1:
+            geocoder_status.append({'name':geocoder.name,'limit':"Unlimited"})
+        elif geocoder.limit > -1:
+            if geocoder.name == "Google Maps":
+                print "Google Maps"
+                try:
+                    geocoder_usages = GeocoderUsage.objects.filter(geocoder=geocoder).filter(has_expired=False)
+                    total_limit = geocoder.limit
+                    timenow = datetime.datetime.utcnow()
+                    for gu in geocoder_usages:
+                        last_geocoding_time = gu.last_geocoding_time.replace(tzinfo=None) # remove time zone info                     
+                        timedelta_in_hour = divmod((timenow-last_geocoding_time).seconds,3600)[0]
+                        if timedelta_in_hour >= 24:
+                            gu.has_expired = True
+                        else:
+                            total_limit -= gu.geocoding_record_num
+                    geocoder_status.append({'name':geocoder.name,'limit':str(total_limit)})
+                except Exception as e:
+                    print e
+            else:
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit)})
+    print geocoder_status
+       
     return {
         "num_project": num_project,
         "num_task": num_task,
+        "geocoder_status": geocoder_status,
     }
 
 
@@ -454,7 +484,10 @@ def start_geocoding(request):
         if ((row[result_headers_index[0]].value) is int) or (type(row[result_headers_index[0]].value) is long):
             label = str(row[result_headers_index[0]].value)
         else:
-            label = row[result_headers_index[0]].value.encode('utf-8').strip()
+            if row[result_headers_index[0]].value:
+                label = row[result_headers_index[0]].value.encode('utf-8').strip()
+            else:
+                label = ""
         address = u""
         for col in result_headers_index[1:]:
             if row[col].value:
@@ -494,6 +527,13 @@ def start_geocoding(request):
             accuracy = tmp_result['accuracy']
         )
         geocoding_result.save()
+    
+    # Google Geocoder Usage
+    google_geocoder_usage = GeocoderUsage(
+        geocoder = Geocoder.objects.get(name="Google Maps"),
+        geocoding_record_num = len(result_list)
+    )
+    google_geocoder_usage.save()    
     
     task.has_result = True
     task.save()

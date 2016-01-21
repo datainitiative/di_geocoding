@@ -30,7 +30,8 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
 admin.site.register(ProjectCategory,ProjectCategoryAdmin)
 
 class GeocoderAdmin(admin.ModelAdmin):
-    fields = ['name']
+    fields = ['name','limit']
+    list_display = ['name','limit']
 admin.site.register(Geocoder,GeocoderAdmin)
 
 class LocationTypeAdmin(admin.ModelAdmin):
@@ -43,7 +44,7 @@ admin.site.register(MatchLevel,MatchLevelAdmin)
 
 class ConfidenceLevelAdmin(admin.ModelAdmin):
     fields = ['score','name']
-    list_display= ['score','name']
+    list_display = ['score','name']
 admin.site.register(ConfidenceLevel,ConfidenceLevelAdmin)
 
 class TaskInline(admin.TabularInline):
@@ -112,3 +113,8 @@ admin.site.register(GeocodingResult,GeocodingResultAdmin)
 class FormattedAddressAdmin(admin.ModelAdmin):
     fields = ['address','point','confidence_level']
 admin.site.register(FormattedAddress,FormattedAddressAdmin)
+
+class GeocoderUsageAdmin(admin.ModelAdmin):
+    fields = ['geocoder','geocoding_record_num','last_geocoding_time']
+    readonly_fields = ['last_geocoding_time']
+admin.site.register(GeocoderUsage,GeocoderUsageAdmin)
