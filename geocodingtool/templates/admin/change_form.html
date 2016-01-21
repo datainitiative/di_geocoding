@@ -132,7 +132,7 @@
         </script>
         {% endif %}
 		
-		<!-- Fix popup incompatible with Django 1.8 -->
+		<!-- Fix popup incompatible with Django 1.8
 		{% block admin_change_form_document_ready %}
 			<script type="text/javascript">
 				(function($) {
@@ -178,7 +178,7 @@
 				})(django.jQuery);
 			</script>
 		{% endblock %}
-		<!-- end fix -->
+		end fix -->
         
         {# JavaScript for prepopulated fields #}
         {% prepopulated_fields_js %}
