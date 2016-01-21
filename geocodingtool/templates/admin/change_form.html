@@ -163,6 +163,20 @@
 								}
 							}
 						});
+						function updateRelatedObjectLinks(triggeringLink) {
+							var $this = django.jQuery(triggeringLink);
+							var siblings = $this.nextAll('.change-related, .delete-related');
+							if (!siblings.length) return;
+							var value = $this.val();
+							if (value) {
+								siblings.each(function() {
+									var elm = django.jQuery(this);
+									elm.attr('href', elm.attr('data-href-template').replace('__fk__', value));
+								});
+							} else {
+								siblings.removeAttr('href');
+							}
+						}
 						$('body').on('change', '.related-widget-wrapper select', function(e) {
 							var event = $.Event('django:update-related');
 							$(this).trigger(event);
@@ -223,6 +237,9 @@
     <script type="text/javascript">
         $(document).ready(function() {
             $("._inline-group").hide();
+			$("input[name='_addanother']").hide();
+			$("input[name='_save']").hide();
+			$("input[name='_continue']").removeClass("btn-default").addClass("btn-primary");
         });
     </script>
 {% endif %}
@@ -240,6 +257,9 @@
         var current_url = "{{ request.get_full_path }}";
         var project_id = parseInt(current_url.substring(current_url.indexOf("?project=")+"?project=".length));
         $("#id_project").val(project_id);
+		$("input[name='_addanother']").hide();
+		$("input[name='_save']").hide();
+		$("input[name='_continue']").removeClass("btn-default").addClass("btn-primary");
     </script>
 {% endif %}
 
