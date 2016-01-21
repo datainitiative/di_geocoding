@@ -288,6 +288,8 @@ def api_geocoding(address):
                             g_latlng.reverse()
                             best_g_latlng = g_latlng
                             best_geocoder = "Bing Maps"
+                            bing_geocoder = Geocoder.objects.get(name="Bing Maps")
+                            bing_geocoder.limit -= 1
                             try:
                                 best_accuracy = g.geojson['properties']['accuracy']
                             except:
