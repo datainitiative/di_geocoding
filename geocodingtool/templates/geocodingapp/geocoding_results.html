@@ -47,6 +47,7 @@
                         <table class="table table-striped table-bordered table-hover" id="dataTables-example">
                             <thead>
                                 <tr>
+									<th></th>
                                     <th>Label</th>
                                     <th>Address</th>
                                     <th>Locatoin</th>
@@ -59,6 +60,7 @@
                             <tbody>
                                 {% for r in task_results %}
                                     <tr class="gradeA" role="row">
+										<td><a href="#panel-map" title="Zoom to on Map" class="record-zoom-to-map" id="{{r.location.lat}},{{r.location.lng}},{{r.name}}"><i class="fa fa-search-plus fa-lg"></i></a></td>
                                         <td>{{r.name}}</td>
                                         <td>{{r.address}}</td>
                                         <td>{{r.location.lat}},{{r.location.lng}}</td>
@@ -177,6 +179,15 @@ $('#mapviewswitch').click(function(){
         leafletView.RegisterMarker(marker);
     });
     map.addLayer(leafletView);
+	
+	$(".record-zoom-to-map").click(function(){
+		var value = this.id.split(",");
+		var coord = [value[0],value[1]];
+		var name = value[2]
+		var tmp_marker = L.marker(coord).addTo(map);
+		map.setView(coord,16)
+		tmp_marker.bindPopup(name).openPopup();
+	});
 </script>
 <!--
 <script src='{% static "flot/excanvas.min.js"%}'></script>
