@@ -115,6 +115,7 @@ class FormattedAddressAdmin(admin.ModelAdmin):
 admin.site.register(FormattedAddress,FormattedAddressAdmin)
 
 class GeocoderUsageAdmin(admin.ModelAdmin):
-    fields = ['geocoder','geocoding_record_num','last_geocoding_time']
+    fields = ['geocoder','geocoding_record_num','last_geocoding_time','has_expired']
     readonly_fields = ['last_geocoding_time']
+    list_display = ['id','geocoder','geocoding_record_num','last_geocoding_time','has_expired']
 admin.site.register(GeocoderUsage,GeocoderUsageAdmin)

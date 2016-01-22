@@ -22,7 +22,7 @@ from util import *
 
 # Import from app
 from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
-from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY
+from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
 from geocodingapp.models import *
 from geocodingapp.forms import *
 
@@ -36,8 +36,32 @@ from openpyxl.utils import (_get_column_letter)
 '''-----------------------
 Home Page
 -----------------------'''
-def update_geocoder_usage():
-    return {}
+def update_all_geocoders_usage():
+    geocoders = Geocoder.objects.all()
+    geocoder_status = []
+    for geocoder in geocoders:
+        if geocoder.limit == -1:
+            geocoder_status.append({'name':geocoder.name,'limit':"Unlimited"})
+        elif geocoder.limit > -1:
+            if geocoder.name == "Google Maps":
+                try:
+                    geocoder_usages = GeocoderUsage.objects.filter(geocoder=geocoder).filter(has_expired=False)
+                    total_limit = GOOGLE_API_LIMIT
+                    timenow = datetime.datetime.utcnow()
+                    for gu in geocoder_usages:
+                        last_geocoding_time = gu.last_geocoding_time.replace(tzinfo=None) # remove time zone info                     
+                        timedelta_in_day = (timenow-last_geocoding_time).days
+                        if timedelta_in_day >= 1:
+                            gu.has_expired = True
+                            gu.save()
+                        else:
+                            total_limit -= gu.geocoding_record_num
+                    geocoder_status.append({'name':geocoder.name,'limit':str(total_limit)})
+                except Exception as e:
+                    print e
+            else:
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit)})    
+    return geocoder_status
 
 # Home page
 @login_required
@@ -47,31 +71,7 @@ def home(request):
     num_project = len(projects)
     tasks = Task.objects.all()
     num_task = len(tasks)
-    geocoders = Geocoder.objects.all()
-    geocoder_status = []
-    for geocoder in geocoders:
-        if geocoder.limit == -1:
-            geocoder_status.append({'name':geocoder.name,'limit':"Unlimited"})
-        elif geocoder.limit > -1:
-            if geocoder.name == "Google Maps":
-                print "Google Maps"
-                try:
-                    geocoder_usages = GeocoderUsage.objects.filter(geocoder=geocoder).filter(has_expired=False)
-                    total_limit = geocoder.limit
-                    timenow = datetime.datetime.utcnow()
-                    for gu in geocoder_usages:
-                        last_geocoding_time = gu.last_geocoding_time.replace(tzinfo=None) # remove time zone info                     
-                        timedelta_in_hour = divmod((timenow-last_geocoding_time).seconds,3600)[0]
-                        if timedelta_in_hour >= 24:
-                            gu.has_expired = True
-                        else:
-                            total_limit -= gu.geocoding_record_num
-                    geocoder_status.append({'name':geocoder.name,'limit':str(total_limit)})
-                except Exception as e:
-                    print e
-            else:
-                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit)})
-    print geocoder_status
+    geocoder_status = update_all_geocoders_usage()
        
     return {
         "num_project": num_project,
@@ -393,6 +393,13 @@ def api_geocoding(address):
     
     return(result)
 
+def update_google_geocoder_usage(record_num):
+    google_geocoder_usage = GeocoderUsage(
+            geocoder = Geocoder.objects.get(name="Google Maps"),
+            geocoding_record_num = record_num
+        )
+    google_geocoder_usage.save()    
+
 @login_required
 def instant_geocoding(request):    
     address = request.POST["address"]
@@ -405,6 +412,9 @@ def instant_geocoding(request):
         'geocoder': geocoder,
         'confidence': confidence
     }
+    # Google Geocoder Usage
+    update_google_geocoder_usage(1) 
+    
     return HttpResponse(json.dumps(response_data),content_type="application/json")
 
 @login_required
@@ -531,11 +541,7 @@ def start_geocoding(request):
         geocoding_result.save()
     
     # Google Geocoder Usage
-    google_geocoder_usage = GeocoderUsage(
-        geocoder = Geocoder.objects.get(name="Google Maps"),
-        geocoding_record_num = len(result_list)
-    )
-    google_geocoder_usage.save()    
+    update_google_geocoder_usage(len(result_list)) 
     
     task.has_result = True
     task.save()
