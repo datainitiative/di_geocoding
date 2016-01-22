@@ -199,7 +199,7 @@ class Task(models.Model):
         db_table = u'task'
         ordering = ['id']
 
-# Model Original Address
+# Model Original Address to Formatted Address
 class Address(models.Model):
 #    id = models.IntegerField(primary_key=True)
     address = models.CharField(max_length=200,null=True,blank=True)
@@ -310,6 +310,7 @@ class FormattedAddress(models.Model):
 #    county = models.ForeignKey('County',null=True,blank=True)
 #    zip_code = models.CharField(max_length=5,null=True,blank=True)
     point = models.ForeignKey('Point',null=True,blank=True)
+    geocoder = models.ForeignKey('Geocoder',null=True,blank=True)
     confidence_level = models.ForeignKey('ConfidenceLevel',null=True,blank=True)
     
     def __unicode__(self):

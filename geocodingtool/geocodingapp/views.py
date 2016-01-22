@@ -524,6 +524,7 @@ def start_geocoding(request):
             formatted_address = FormattedAddress(
                 address = formattedaddress,
                 point = point,
+                geocoder = geocoder,
                 confidence_level = confidence,
             )
             formatted_address.save()

@@ -111,7 +111,8 @@ class GeocodingResultAdmin(admin.ModelAdmin):
 admin.site.register(GeocodingResult,GeocodingResultAdmin)
 
 class FormattedAddressAdmin(admin.ModelAdmin):
-    fields = ['address','point','confidence_level']
+    fields = ['address','point','geocoder','confidence_level']
+    list_display = ['address','point','geocoder','confidence_level']
 admin.site.register(FormattedAddress,FormattedAddressAdmin)
 
 class GeocoderUsageAdmin(admin.ModelAdmin):
