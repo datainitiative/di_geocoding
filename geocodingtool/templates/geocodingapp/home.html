@@ -202,7 +202,7 @@ function geocode(){
                 var confidence = json.confidence;
                 $("#input-point-coord").val(point[0]+","+point[1]);
                 var marker = L.marker(point).addTo(map);
-                marker.bindPopup(address+"<br>("+point[0]+","+point[1]+")<br>Geocoder: "+geocoder+"<br>Confidence Level: "+confidence).openPopup();
+                marker.bindPopup(address+"<br>("+point[0]+","+point[1]+")<br>Geocoder: "+geocoder+"<br>Confidence Level: "+confidence+' <a title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><i class="fa fa-question-circle"></i></a>').openPopup();
                 map.setView(point,16)
             }
         },
