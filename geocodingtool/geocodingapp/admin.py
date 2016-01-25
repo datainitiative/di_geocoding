@@ -92,18 +92,11 @@ class TaskAdmin(admin.ModelAdmin):
     
 admin.site.register(Task,TaskAdmin)
 
-class AddressAdmin(admin.ModelAdmin):
-    fields = ['address','task','upload_table']
-admin.site.register(Address,AddressAdmin)
-
-task = models.ForeignKey('Task')
-name = models.CharField(max_length=500,null=True,blank=True)
-address = models.CharField(max_length=500,null=True,blank=True)
-formatted_address = models.ForeignKey('FormattedAddress',null=True,blank=True)
-location = models.ForeignKey('Point',null=True,blank=True)
-geocoder = models.ForeignKey('Geocoder',null=True,blank=True)
-confidence_level = models.ForeignKey('ConfidenceLevel',null=True,blank=True)
-accuracy = models.CharField(max_length=100,null=True,blank=True)
+class AddressInventoryAdmin(admin.ModelAdmin):
+    fields = ['address','formatted_address']
+    list_display = ['id','address','formatted_address']
+    search_fields = ['address']
+admin.site.register(AddressInventory,AddressInventoryAdmin)
 
 class GeocodingResultAdmin(admin.ModelAdmin):
     fields = ['task','name','address','formatted_address','location','geocoder','confidence_level','accuracy']

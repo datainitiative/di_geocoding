@@ -200,33 +200,32 @@ class Task(models.Model):
         ordering = ['id']
 
 # Model Original Address to Formatted Address
-class Address(models.Model):
+class AddressInventory(models.Model):
 #    id = models.IntegerField(primary_key=True)
     address = models.CharField(max_length=200,null=True,blank=True)
-    task = models.ForeignKey('Task')
-    upload_table = models.CharField(max_length=200,null=True,blank=True)
+    formatted_address = models.ForeignKey('FormattedAddress',null=True,blank=True)
     
     def __unicode__(self):
         return str(self.id)
     
     def previous(self):
         try:
-            previous_records = Address.objects.filter(id__lt=self.id)
+            previous_records = AddressInventory.objects.filter(id__lt=self.id)
             previous_id = previous_records.order_by('-id')[0].id
-            return Address.objects.get(id=previous_id)
+            return AddressInventory.objects.get(id=previous_id)
         except:
             return None
         
     def next(self):
         try:
-            next_records = Address.objects.filter(id__gt=self.id)
+            next_records = AddressInventory.objects.filter(id__gt=self.id)
             next_id = next_records.order_by('id')[0].id
-            return Address.objects.get(id=next_id)
+            return AddressInventory.objects.get(id=next_id)
         except:
             return None
 
     class Meta:
-        db_table = u'address'
+        db_table = u'address_inventory'
         ordering = ['id']
 
 # Model Geocoding Results
