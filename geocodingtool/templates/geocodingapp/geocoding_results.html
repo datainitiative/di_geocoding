@@ -63,7 +63,13 @@
 										<td><a href="#panel-map" title="Zoom to on Map" class="record-zoom-to-map" id="{{r.location.lat}},{{r.location.lng}},{{r.name}}"><i class="fa fa-search-plus fa-lg"></i></a></td>
                                         <td>{{r.name}}</td>
                                         <td>{{r.address}}</td>
-                                        <td>{{r.location.lat}},{{r.location.lng}}</td>
+                                        <td>
+                                            {% if r.location %}
+                                                {{r.location.lat}},{{r.location.lng}}
+                                            {% else %}
+                                                None
+                                            {% endif %}
+                                        </td>
                                         <td>{{r.geocoder}}</td>
                                         {% if r.confidence_level.score > 7 %}
                                             <td>{{r.confidence_level.score}}</td>
@@ -128,7 +134,7 @@
 $(document).ready(function() {
     $('#dataTables-example').DataTable({
             responsive: true,
-            "order":[[4,"asc"]],
+            "order":[[5,"asc"]],
     });
 });
 $('#mapviewswitch').click(function(){

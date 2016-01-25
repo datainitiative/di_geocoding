@@ -83,7 +83,7 @@ def home(request):
 '''-----------------------
 Functions
 -----------------------'''
-def api_geocoding(address):
+def api_geocoding(address,usage_id=None):
     t1 = time.time()
     
     confidence_level = -1
@@ -96,7 +96,10 @@ def api_geocoding(address):
     is_fail = False
     # Google geocoder
     print address
-    print "Start geocoding, try Google"        
+    print "Start geocoding, try Google"
+    # update google usage
+    if usage_id:
+        update_google_geocoder_usage(usage_id,1,False)    
     g = geocoder.google(address)
     print g.geojson
     if g.geojson['properties']['ok']:
@@ -393,17 +396,22 @@ def api_geocoding(address):
     
     return(result)
 
-def update_google_geocoder_usage(record_num):
-    google_geocoder_usage = GeocoderUsage(
-            geocoder = Geocoder.objects.get(name="Google Maps"),
-            geocoding_record_num = record_num
-        )
-    google_geocoder_usage.save()    
+def update_google_geocoder_usage(usage_id=None,record_num=0,new_usage=True):
+    if new_usage:
+        google_geocoder_usage = GeocoderUsage(
+                geocoder = Geocoder.objects.get(name="Google Maps"),
+                geocoding_record_num = record_num
+            )
+    else:
+        google_geocoder_usage = GeocoderUsage.objects.get(id=usage_id)
+        google_geocoder_usage.geocoding_record_num += 1
+    google_geocoder_usage.save()
+    return google_geocoder_usage
 
 @login_required
 def instant_geocoding(request):    
     address = request.POST["address"]
-    result = api_geocoding(address)
+    result = api_geocoding(address,None)
     point = json.dumps(result["point"])
     geocoder = result["geocoder"]
     confidence = result["confidence"]
@@ -413,7 +421,7 @@ def instant_geocoding(request):
         'confidence': confidence
     }
     # Google Geocoder Usage
-    update_google_geocoder_usage(1) 
+    update_google_geocoder_usage(None,1,True)
     
     return HttpResponse(json.dumps(response_data),content_type="application/json")
 
@@ -511,23 +519,33 @@ def start_geocoding(request):
                             'address':address[:-2]})
     for result in result_list:
         address = result['address']
-        tmp_result = api_geocoding(address)
+        # Create New Google Geocoder Usage
+        google_usage = update_google_geocoder_usage(None,0,True)
+        tmp_result = api_geocoding(address,google_usage.id)
         tmp_point = tmp_result["point"]
-        point = Point(lat=tmp_point[0],lng=tmp_point[1])
-        point.save()
-        geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
-        confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
-        formattedaddress = tmp_result['formattedaddress']
-        try:
-            formatted_address = FormattedAddress.objects.get(address=formattedaddress)
-        except:
-            formatted_address = FormattedAddress(
-                address = formattedaddress,
-                point = point,
-                geocoder = geocoder,
-                confidence_level = confidence,
-            )
-            formatted_address.save()
+        if tmp_point == "Failed!":
+            formatted_address = None
+            point = None
+            geocoder = None
+            confidence = ConfidenceLevel.objects.get(score=-1)
+            accuracy = "No matching result found. Geocoding failed!"
+        else:
+            point = Point(lat=tmp_point[0],lng=tmp_point[1])
+            point.save()
+            geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
+            confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
+            formattedaddress = tmp_result['formattedaddress']
+            accuracy = tmp_result['accuracy']
+            try:
+                formatted_address = FormattedAddress.objects.get(address=formattedaddress)
+            except:
+                formatted_address = FormattedAddress(
+                    address = formattedaddress,
+                    point = point,
+                    geocoder = geocoder,
+                    confidence_level = confidence,
+                )
+                formatted_address.save()
 
         geocoding_result = GeocodingResult(
             task = task,
@@ -537,12 +555,9 @@ def start_geocoding(request):
             location = point,
             geocoder = geocoder,
             confidence_level = confidence,
-            accuracy = tmp_result['accuracy']
+            accuracy = accuracy
         )
         geocoding_result.save()
-    
-    # Google Geocoder Usage
-    update_google_geocoder_usage(len(result_list)) 
     
     task.has_result = True
     task.save()
@@ -559,8 +574,9 @@ def geocoding_result(request):
     points = []
     points_wlabels = []
     for result in task_results:
-        points.append([result.location.lat,result.location.lng])
-        points_wlabels.append([result.location.lat,result.location.lng,result.name])
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
     return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
 
 
