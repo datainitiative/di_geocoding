@@ -617,55 +617,66 @@ def start_geocoding(request):
                     'confidence': confidence,
                     'accuracy': accuracy,
                     'formattedaddress': formatted_address                
-                }       
+                } 
+                geocoding_result = GeocodingResult(
+                  task = task,
+                  name = result['label'],
+                  address = address,
+                  formatted_address = get_formatted_address,
+                  location = get_formatted_address.point,
+                  geocoder = get_formatted_address.geocoder,
+                  confidence_level = get_formatted_address.confidence_level,
+                  accuracy = accuracy
+                )
+                geocoding_result.save()      
             except Exception as e:
                 print e
                 print "address fail, use geocoding api"
                 # Create New Google Geocoder Usage
                 google_usage = update_google_geocoder_usage(None,0,True)
                 tmp_result = api_geocoding(address,google_usage.id)
-            tmp_point = tmp_result["point"]
-            if tmp_point == "Failed!":
-                formatted_address = None
-                point = None
-                geocoder = None
-                confidence = ConfidenceLevel.objects.get(score=-1)
-                accuracy = "No matching result found. Geocoding failed!"
-            else:
-                point = Point(lat=tmp_point[0],lng=tmp_point[1])
-                point.save()
-                geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
-                confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
-                formattedaddress = tmp_result['formattedaddress']
-                accuracy = tmp_result['accuracy']
-                try:
-                    formatted_address = FormattedAddress.objects.get(address=formattedaddress)
-                except:
-                    formatted_address = FormattedAddress(
-                        address = formattedaddress,
-                        point = point,
+                tmp_point = tmp_result["point"]
+                if tmp_point == "Failed!":
+                    formatted_address = None
+                    point = None
+                    geocoder = None
+                    confidence = ConfidenceLevel.objects.get(score=-1)
+                    accuracy = "No matching result found. Geocoding failed!"
+                else:
+                    point = Point(lat=tmp_point[0],lng=tmp_point[1])
+                    point.save()
+                    geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
+                    confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
+                    formattedaddress = tmp_result['formattedaddress']
+                    accuracy = tmp_result['accuracy']
+                    try:
+                        formatted_address = FormattedAddress.objects.get(address=formattedaddress)
+                    except:
+                        formatted_address = FormattedAddress(
+                            address = formattedaddress,
+                            point = point,
+                            geocoder = geocoder,
+                            confidence_level = confidence,
+                        )
+                        formatted_address.save()
+                    print "save new address"
+                    new_address = AddressInventory(
+                        address = address,
+                        formatted_address = formatted_address
+                    )
+                    new_address.save()                    
+
+                    geocoding_result = GeocodingResult(
+                        task = task,
+                        name = result['label'],
+                        address = address,
+                        formatted_address = formatted_address,
+                        location = point,
                         geocoder = geocoder,
                         confidence_level = confidence,
+                        accuracy = accuracy
                     )
-                    formatted_address.save()
-                print "save new address"
-                new_address = AddressInventory(
-                    address = address,
-                    formatted_address = formatted_address
-                )
-                new_address.save()                    
-
-                geocoding_result = GeocodingResult(
-                    task = task,
-                    name = result['label'],
-                    address = address,
-                    formatted_address = formatted_address,
-                    location = point,
-                    geocoder = geocoder,
-                    confidence_level = confidence,
-                    accuracy = accuracy
-                )
-                geocoding_result.save()
+                    geocoding_result.save()
 
     task.has_result = True
     task.save()
