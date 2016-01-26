@@ -23,6 +23,7 @@ from util import *
 # Import from app
 from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
+from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
 from geocodingapp.models import *
 from geocodingapp.forms import *
 
@@ -493,22 +494,39 @@ def geocoding_setup(request):
     # read task file
     task = Task.objects.get(id=task_id)
     file_path = task.file.path
-    wb = load_workbook(file_path,read_only=True)
-    sheet_names = wb.get_sheet_names()
-    ws = wb[sheet_names[0]]
-    rownum = ws.get_highest_row()
-    colnum = ws.get_highest_column()
-    colletter = str(_get_column_letter(colnum))
-    preview_range = "A1:%s11" % colletter
-    preview_table = []
-    for row in ws.iter_rows(preview_range):
-        tmp_row = []
-        for cell in row:
-            tmp_row.append(cell.value)
-        preview_table.append(tmp_row)
-    print preview_table
-    preview_table_headers = preview_table[0]
-    preview_table_content = preview_table[1:]
+    file_ext = file_path[file_path.rfind("."):]
+    ## read excel file
+    if file_ext in EXCEL_FILE_EXTENSIONS:    
+        wb = load_workbook(file_path,read_only=True)
+        sheet_names = wb.get_sheet_names()
+        ws = wb[sheet_names[0]]
+        rownum = ws.get_highest_row()
+        colnum = ws.get_highest_column()
+        colletter = str(_get_column_letter(colnum))
+        preview_range = "A1:%s11" % colletter
+        preview_table = []
+        for row in ws.iter_rows(preview_range):
+            tmp_row = []
+            for cell in row:
+                tmp_row.append(cell.value)
+            preview_table.append(tmp_row)
+    ## read csv file
+    elif file_ext in CSV_FILE_EXTENSIONS:
+        preview_table = []
+        with open(file_path,'rb') as csvfile:
+            csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
+            for i in range(11):
+                preview_table.append(csvreader.next())
+    else:
+        print "file not supported"
+        preview_table = None
+    if preview_table:
+        print preview_table
+        preview_table_headers = preview_table[0]
+        preview_table_content = preview_table[1:]
+    else:
+        preview_table_headers = None
+        preview_table_content = None
     
     return {
             'task_id': task_id,
@@ -518,6 +536,7 @@ def geocoding_setup(request):
 
 @login_required
 def start_geocoding(request):
+    is_file_supported = False
     reload(sys)  
     sys.setdefaultencoding('utf8')
     task_id = None
@@ -545,141 +564,173 @@ def start_geocoding(request):
     # read task file
     task = Task.objects.get(id=task_id)
     file_path = task.file.path
-    wb = load_workbook(file_path,read_only=True)
-    sheet_names = wb.get_sheet_names()
-    ws = wb[sheet_names[0]]
-    rownum = ws.get_highest_row()
-    colnum = ws.get_highest_column()
-    xls_headers = []
-    for row in ws.get_squared_range(1,1,colnum,1):
-        for cell in row:
-            xls_headers.append(cell.value)
-    print xls_headers
-    result_headers_index = []
-    for h in result_headers:
-        result_headers_index.append(xls_headers.index(h))    
-    print result_headers_index
-    result_list = []
-    for row in ws.iter_rows(row_offset=1):
-        if ((row[result_headers_index[0]].value) is int) or (type(row[result_headers_index[0]].value) is long):
-            label = str(row[result_headers_index[0]].value)
-        else:
-            if row[result_headers_index[0]].value:
-                label = row[result_headers_index[0]].value.encode('utf-8').strip()
+    file_ext = file_path[file_path.rfind("."):]
+    ## read excel file
+    if file_ext in EXCEL_FILE_EXTENSIONS:
+        is_file_supported = True
+        wb = load_workbook(file_path,read_only=True)
+        sheet_names = wb.get_sheet_names()
+        ws = wb[sheet_names[0]]
+        rownum = ws.get_highest_row()
+        colnum = ws.get_highest_column()
+        xls_headers = []
+        for row in ws.get_squared_range(1,1,colnum,1):
+            for cell in row:
+                xls_headers.append(cell.value)
+        print xls_headers
+        result_headers_index = []
+        for h in result_headers:
+            result_headers_index.append(xls_headers.index(h))    
+        print result_headers_index
+        result_list = []
+        for row in ws.iter_rows(row_offset=1):
+            if (type(row[result_headers_index[0]].value) is int) or (type(row[result_headers_index[0]].value) is long):
+                label = str(row[result_headers_index[0]].value)
             else:
-                label = ""
-        address = u""
-        for col in result_headers_index[1:]:
-            if row[col].value:
-                if (type(row[col].value) is int) or (type(row[col].value) is long):
-                    address += "%s, " % str(row[col].value)
+                if row[result_headers_index[0]].value:
+                    label = row[result_headers_index[0]].value.encode('utf-8').strip()
                 else:
-                    address += "%s, " % row[col].value.encode('utf-8').strip()
-        result_list.append({'label':label,
-                            'address':address[:-2]})
-    for result in result_list:
-        address = result['address']        
-        # Check if address exists
-        print "geo for address: ", address
-        try:
-            print "search in format address"
-            get_address = FormattedAddress.objects.get(address=address)
-            get_formatted_address = get_address
-            point = [get_formatted_address.point.lat,get_formatted_address.point.lng]
-            geocoder = get_formatted_address.geocoder.name
-            confidence = get_formatted_address.confidence_level.score
-            accuracy = "Address Inventory"
-            tmp_result = {
-                'point': point,
-                'geocoder': geocoder,
-                'confidence': confidence,
-                'accuracy': accuracy,
-                'formattedaddress': address                
-            }
-        except:
-            print "format fail"
+                    label = ""
+            address = u""
+            for col in result_headers_index[1:]:
+                if row[col].value:
+                    if (type(row[col].value) is int) or (type(row[col].value) is long):
+                        address += "%s, " % str(row[col].value)
+                    else:
+                        address += "%s, " % row[col].value.encode('utf-8').strip()
+            result_list.append({'label':label,
+                                'address':address[:-2]})
+    ## read csv file
+    elif file_ext in CSV_FILE_EXTENSIONS:
+        is_file_supported = True
+        result_list = []
+        with open(file_path,'rb') as csvfile:
+            csvreader = csv.DictReader(csvfile)
+            for row in csvreader:
+                if (type(row[result_headers[0]]) is int) or (type(row[result_headers[0]]) is long):
+                    label = str(row[result_headers[0]])
+                else:
+                    if row[result_headers[0]]:
+                        label = row[result_headers[0]].encode('utf-8').strip()
+                    else:
+                        label = ""
+                address = u""
+                for col in result_headers[1:]:
+                    if row[col]:
+                        if (type(row[col] is int)) or (type(row[col]) is long):
+                            address += "%s, " % str(row[col])
+                        else:
+                            address += "%s, " % row[col].encode('utf-8').strip()
+                result_list.append({'label':label,
+                                    'address':address[:-2]})
+    else:
+        print "file type not supported"
+        
+    if is_file_supported:
+        # start geocoding
+        for result in result_list:
+            address = result['address']        
+            # Check if address exists
+            print "geo for address: ", address
             try:
-                print "search in address"
-                get_address = AddressInventory.objects.get(address=address)
-                print "address found in inventory"
-                print get_address
-                get_formatted_address = get_address.formatted_address
-                print "1"
+                print "search in format address"
+                get_address = FormattedAddress.objects.get(address=address)
+                get_formatted_address = get_address
                 point = [get_formatted_address.point.lat,get_formatted_address.point.lng]
                 geocoder = get_formatted_address.geocoder.name
                 confidence = get_formatted_address.confidence_level.score
                 accuracy = "Address Inventory"
-                formatted_address = get_formatted_address.address
-                print "2"
                 tmp_result = {
                     'point': point,
                     'geocoder': geocoder,
                     'confidence': confidence,
                     'accuracy': accuracy,
-                    'formattedaddress': formatted_address                
-                } 
-                geocoding_result = GeocodingResult(
-                  task = task,
-                  name = result['label'],
-                  address = address,
-                  formatted_address = get_formatted_address,
-                  location = get_formatted_address.point,
-                  geocoder = get_formatted_address.geocoder,
-                  confidence_level = get_formatted_address.confidence_level,
-                  accuracy = accuracy
-                )
-                geocoding_result.save()      
-            except Exception as e:
-                print e
-                print "address fail, use geocoding api"
-                # Create New Google Geocoder Usage
-                google_usage = update_google_geocoder_usage(None,0,True)
-                tmp_result = api_geocoding(address,google_usage.id)
-                tmp_point = tmp_result["point"]
-                if tmp_point == "Failed!":
-                    formatted_address = None
-                    point = None
-                    geocoder = None
-                    confidence = ConfidenceLevel.objects.get(score=-1)
-                    accuracy = "No matching result found. Geocoding failed!"
-                else:
-                    point = Point(lat=tmp_point[0],lng=tmp_point[1])
-                    point.save()
-                    geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
-                    confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
-                    formattedaddress = tmp_result['formattedaddress']
-                    accuracy = tmp_result['accuracy']
-                    try:
-                        formatted_address = FormattedAddress.objects.get(address=formattedaddress)
-                    except:
-                        formatted_address = FormattedAddress(
-                            address = formattedaddress,
-                            point = point,
+                    'formattedaddress': address                
+                }
+            except:
+                print "format fail"
+                try:
+                    print "search in address"
+                    get_address = AddressInventory.objects.get(address=address)
+                    print "address found in inventory"
+                    print get_address
+                    get_formatted_address = get_address.formatted_address
+                    print "1"
+                    point = [get_formatted_address.point.lat,get_formatted_address.point.lng]
+                    geocoder = get_formatted_address.geocoder.name
+                    confidence = get_formatted_address.confidence_level.score
+                    accuracy = "Address Inventory"
+                    formatted_address = get_formatted_address.address
+                    print "2"
+                    tmp_result = {
+                        'point': point,
+                        'geocoder': geocoder,
+                        'confidence': confidence,
+                        'accuracy': accuracy,
+                        'formattedaddress': formatted_address                
+                    } 
+                    geocoding_result = GeocodingResult(
+                      task = task,
+                      name = result['label'],
+                      address = address,
+                      formatted_address = get_formatted_address,
+                      location = get_formatted_address.point,
+                      geocoder = get_formatted_address.geocoder,
+                      confidence_level = get_formatted_address.confidence_level,
+                      accuracy = accuracy
+                    )
+                    geocoding_result.save()      
+                except Exception as e:
+                    print e
+                    print "address fail, use geocoding api"
+                    # Create New Google Geocoder Usage
+                    google_usage = update_google_geocoder_usage(None,0,True)
+                    tmp_result = api_geocoding(address,google_usage.id)
+                    tmp_point = tmp_result["point"]
+                    if tmp_point == "Failed!":
+                        formatted_address = None
+                        point = None
+                        geocoder = None
+                        confidence = ConfidenceLevel.objects.get(score=-1)
+                        accuracy = "No matching result found. Geocoding failed!"
+                    else:
+                        point = Point(lat=tmp_point[0],lng=tmp_point[1])
+                        point.save()
+                        geocoder = Geocoder.objects.get(name=tmp_result['geocoder'])
+                        confidence = ConfidenceLevel.objects.get(score=tmp_result['confidence'])
+                        formattedaddress = tmp_result['formattedaddress']
+                        accuracy = tmp_result['accuracy']
+                        try:
+                            formatted_address = FormattedAddress.objects.get(address=formattedaddress)
+                        except:
+                            formatted_address = FormattedAddress(
+                                address = formattedaddress,
+                                point = point,
+                                geocoder = geocoder,
+                                confidence_level = confidence,
+                            )
+                            formatted_address.save()
+                        print "save new address"
+                        new_address = AddressInventory(
+                            address = address,
+                            formatted_address = formatted_address
+                        )
+                        new_address.save()                    
+
+                        geocoding_result = GeocodingResult(
+                            task = task,
+                            name = result['label'],
+                            address = address,
+                            formatted_address = formatted_address,
+                            location = point,
                             geocoder = geocoder,
                             confidence_level = confidence,
+                            accuracy = accuracy
                         )
-                        formatted_address.save()
-                    print "save new address"
-                    new_address = AddressInventory(
-                        address = address,
-                        formatted_address = formatted_address
-                    )
-                    new_address.save()                    
+                        geocoding_result.save()
 
-                    geocoding_result = GeocodingResult(
-                        task = task,
-                        name = result['label'],
-                        address = address,
-                        formatted_address = formatted_address,
-                        location = point,
-                        geocoder = geocoder,
-                        confidence_level = confidence,
-                        accuracy = accuracy
-                    )
-                    geocoding_result.save()
-
-    task.has_result = True
-    task.save()
+        task.has_result = True
+        task.save()
     
     redirect_url = "%s/geocoding/results?task=%d" % (ROOT_APP_URL,task_id)
     return HttpResponseRedirect(redirect_url)
