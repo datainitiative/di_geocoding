@@ -169,7 +169,7 @@ class Project(models.Model):
 # Model Geocoding Task        
 class Task(models.Model):
 #    id = models.IntegerField(primary_key=True)
-    description = models.CharField(max_length=200,null=True,blank=True)
+    description = models.CharField(max_length=500)
     project = models.ForeignKey('Project')
     initiate_date = models.DateField(auto_now=True)
     note = models.TextField(max_length=500,null=True,blank=True)
