@@ -1,3 +1,4 @@
+// Home Page
 var enjoyhint_script_steps_first_time_visitor_home_page = [{
 		"next #site-name": "Welcome to Geocoding Tool!\n We noticed you are new! Let us walk you through.",
 		"nextButton" : {className: "myNext", text: "Continue"},
@@ -22,7 +23,7 @@ var enjoyhint_script_steps_home_page = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next #btn-geocode": "Click to start geocoding.",
+		"click #btn-geocode": "Click to start geocoding.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
@@ -46,15 +47,218 @@ var enjoyhint_script_steps_home_page = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour": "You can always come back to this tutorial by clicking the question mark here.",
+		"click #btn-site-tour-home-page": "You can always come back to this tutorial by clicking the question mark here.",
 		"showNext": false,
 		"skipButton" : {className: "mySkip", text: "Got it!"},
 	}
 ];
 
-// Site Tour JS	
-$("#btn-site-tour").click(function(){
+// Home Page Button Click
+$("#btn-site-tour-home-page").click(function(){
 	var enjoyhint_instance = new EnjoyHint({});
 	enjoyhint_instance.set(enjoyhint_script_steps_home_page);
+	enjoyhint_instance.run();
+});
+
+
+// Add Project
+var enjoyhint_script_steps_add_project = [
+	{
+		"next #id_title": "Enter the title of your project. This field is requried.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_description": "Description of your project. (Optional)",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_category": "Select a category. (Required)",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_url": "URL to your project website. (Optional)",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #id_start_date": "Click to enter project start date. (Required)",
+		"showSkip": false,
+	},
+	{
+		"next #id_start_date + .datetimeshortcuts": "Click the calendar icon to select a date, or click today.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #id_end_date": "Click to enter project due date. (Required)",
+		"showSkip": false,
+	},
+	{
+		"next #id_end_date + .datetimeshortcuts": "Click the calendar icon to select a date, or click today.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next input[name='_continue']": "Click here to save your project, and proceed to adding new geocoding tasks.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #btn-site-tour-add-project": "You can always come back to this tutorial by clicking the question mark here.",
+		"showNext": false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	}
+];
+
+// Add Project Button Click
+$("#btn-site-tour-add-project").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_add_project);
+	enjoyhint_instance.run();
+});
+
+// Post-Add Project
+var enjoyhint_script_steps_post_add_project = [
+	{
+		"next #panel-task-list": "Here is a list of geocoding tasks added to this project.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #add-new-geocoding-task": "Click here to add a geocoding task to this project.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #btn-site-tour-post-add-project": "You can always come back to this tutorial by clicking the question mark here.",
+		"showNext": false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	}
+];
+
+// Post-Add Project Button Click
+$("#btn-site-tour-post-add-project").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_post_add_project);
+	enjoyhint_instance.run();
+});
+
+// Add Task
+var enjoyhint_script_steps_add_task = [
+	{
+		"next #id_description": "Describe the geocoding task here. This field is requried.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_project": "Select the project that new task will be added to. The project will be preselected if you come from the project page.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_note": "Add note for the task. (Optional)",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #id_file": "Choose the address file to uplaod. Excel spreadsheet and CSV file are supported.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next input[name='_continue']": "Click here to save your task, and proceed to geocoding configuration.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #btn-site-tour-add-task": "You can always come back to this tutorial by clicking the question mark here.",
+		"showNext": false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	}
+];
+
+// Add Task Button Click
+$("#btn-site-tour-add-task").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_add_task);
+	enjoyhint_instance.run();
+});
+
+
+// Setup Geocoding
+var enjoyhint_script_steps_setup_geocoding = [
+	{
+		"next #panel-field-mapping": "Mapping the 'columns' in address file to the 'fields' required by the geocoder.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #panel-table-preview": "For reference, you can preview the first 10 rows of the address file here.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #sel-address": "Select the column that contains street address. This field is required.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #sel-city": "Select the column that contains city name. This field is required if zip code is not specified. If city is already included in street address column, leave this field as 'None'.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #sel-state": "Select the column that contains state name. This field is required if zip code is not specified. If state is already included in street address column, leave this field as 'None'.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #sel-zip": "Select the column that contains zip code. This field is required if city and state are not specified.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #sel-label": "Select the column that contains the name for the address, eg. business name, school name, etc. This field is required.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #geocoding_url": "Click here to start geocoding. The process takes seconds to minutes depending on the number of addresses to be geocoded. Please don't close this page while it's processing. ",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #btn-site-tour-setup-geocoding": "You can always come back to this tutorial by clicking the question mark here.",
+		"showNext": false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	}
+];
+
+// Setup Geocoding Button Click
+$("#btn-site-tour-setup-geocoding").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_setup_geocoding);
+	enjoyhint_instance.run();
+});
+
+
+// Geocoding Result
+var enjoyhint_script_steps_geocoding_result = [
+	{
+		"next #panel-table": "Geocoding results are shown here.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #tbheader-confidence": "Geocoding results are sorted by confidence level in ascending order. Location with confidence level lower than 8 should be used with caution.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next .record-edit": "Click here to edit Geocoding result to fix any inaccurate or incorrect location.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next .record-zoom-to-map": "Click here to zoom to the location on the map",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #panel-map-header": "The locations are also displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #btn-download-csv": "Click this button to download geocoding results as a CSV file.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #btn-site-tour-geocoding-result": "You can always come back to this tutorial by clicking the question mark here.",
+		"showNext": false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	}
+];
+
+// Setup Geocoding Button Click
+$("#btn-site-tour-geocoding-result").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_geocoding_result);
 	enjoyhint_instance.run();
 });
