@@ -96,7 +96,7 @@ var enjoyhint_script_steps_add_project = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next input[name='_continue']": "Click here to save your project, and proceed to adding new geocoding tasks.",
+		"next input[name='_continue']": "Click here to save your project.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
@@ -156,7 +156,7 @@ var enjoyhint_script_steps_add_task = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next input[name='_continue']": "Click here to save your task, and proceed to geocoding configuration.",
+		"next input[name='_continue']": "Click here to save your task.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
@@ -170,6 +170,23 @@ var enjoyhint_script_steps_add_task = [
 $("#btn-site-tour-add-task").click(function(){
 	var enjoyhint_instance = new EnjoyHint({});
 	enjoyhint_instance.set(enjoyhint_script_steps_add_task);
+	enjoyhint_instance.run();
+});
+
+
+// Post-Add Task
+var enjoyhint_script_steps_post_add_task = [
+	{
+		"click #btn-setup-geocoding": "Click here to set geocoding configuration before geocoding process.",
+		"showNext":false,
+		"skipButton" : {className: "mySkip", text: "Got it!"},
+	},
+];
+
+// Post-Add Project Button Click
+$("#btn-site-tour-post-add-task").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_post_add_task);
 	enjoyhint_instance.run();
 });
 
