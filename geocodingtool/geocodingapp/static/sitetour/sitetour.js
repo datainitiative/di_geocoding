@@ -9,6 +9,7 @@ var enjoyhint_script_steps_home_page = [
 	{
 		"next #start-single-task": "Click here to create a single geocoding task for batch geocoding addresses in a spreadsheet you upload.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"next #start-new-project": "Click here to start a brand new project where you can add geocoding tasks to it.",
@@ -21,6 +22,7 @@ var enjoyhint_script_steps_home_page = [
 	{
 		"next #input-address": "Enter an address here, including street address, city, state, and zip code. Zip code is optional, but is requried if city and state are not specified.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"click #btn-geocode": "Click to start geocoding.",
@@ -47,9 +49,9 @@ var enjoyhint_script_steps_home_page = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour-home-page": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-home-page": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
@@ -100,9 +102,9 @@ var enjoyhint_script_steps_add_project = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour-add-project": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-add-project": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
@@ -124,9 +126,9 @@ var enjoyhint_script_steps_post_add_project = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour-post-add-project": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-post-add-project": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
@@ -160,9 +162,9 @@ var enjoyhint_script_steps_add_task = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour-add-task": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-add-task": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
@@ -177,16 +179,27 @@ $("#btn-site-tour-add-task").click(function(){
 // Post-Add Task
 var enjoyhint_script_steps_post_add_task = [
 	{
-		"click #btn-setup-geocoding": "Click here to set geocoding configuration before geocoding process.",
-		"showNext":false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-setup-geocoding": "Click here to setup geocoding configuration before geocoding process.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
+	},
+];
+
+var enjoyhint_script_steps_post_add_task_view_results = [
+	{
+		"next #btn-view-geocoding-results": "Click here to view geocoding results.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	},
 ];
 
 // Post-Add Project Button Click
 $("#btn-site-tour-post-add-task").click(function(){
 	var enjoyhint_instance = new EnjoyHint({});
-	enjoyhint_instance.set(enjoyhint_script_steps_post_add_task);
+	if ($("#btn-setup-geocoding").length){
+		enjoyhint_instance.set(enjoyhint_script_steps_post_add_task);}
+	else {
+		enjoyhint_instance.set(enjoyhint_script_steps_post_add_task_view_results);}
 	enjoyhint_instance.run();
 });
 
@@ -208,10 +221,12 @@ var enjoyhint_script_steps_setup_geocoding = [
 	{
 		"next #sel-city": "Select the column that contains city name. This field is required if zip code is not specified. If city is already included in street address column, leave this field as 'None'.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"next #sel-state": "Select the column that contains state name. This field is required if zip code is not specified. If state is already included in street address column, leave this field as 'None'.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"next #sel-zip": "Select the column that contains zip code. This field is required if city and state are not specified.",
@@ -224,11 +239,12 @@ var enjoyhint_script_steps_setup_geocoding = [
 	{
 		"next #geocoding_url": "Click here to start geocoding. The process takes seconds to minutes depending on the number of addresses to be geocoded. Please don't close this page while it's processing. ",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
-		"click #btn-site-tour-setup-geocoding": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-setup-geocoding": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
@@ -247,8 +263,13 @@ var enjoyhint_script_steps_geocoding_result = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next #tbheader-confidence": "Geocoding results are sorted by confidence level in ascending order. Location with confidence level lower than 8 should be used with caution.",
+		"next #dataTables-example_filter": "You can search for result that contains certain text.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #tbheader-confidence": "Geocoding results are sorted by confidence level in ascending order. Location with confidence level LOWER THAN 8 should be used with caution.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"next .record-edit": "Click here to edit Geocoding result to fix any inaccurate or incorrect location.",
@@ -261,15 +282,16 @@ var enjoyhint_script_steps_geocoding_result = [
 	{
 		"next #panel-map-header": "The locations are also displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
 		"next #btn-download-csv": "Click this button to download geocoding results as a CSV file.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"click #btn-site-tour-geocoding-result": "You can always come back to this tutorial by clicking the question mark here.",
-		"showNext": false,
-		"skipButton" : {className: "mySkip", text: "Got it!"},
+		"next #btn-site-tour-geocoding-result": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "mySkip", text: "Got it!"},
+		"showSkip": false,
 	}
 ];
 
