@@ -9,10 +9,16 @@
 <link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.css">
 <!-- Prune Cluster -->
 <link rel="stylesheet" href="{% static 'prunecluster/LeafletStyleSheet.css' %}">
+<!-- Enjoyhint style -->
+<link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
 <style>
 #map { height: 600px; }
 .panel-heading-link { color: #FFF!important;}
 </style>
+{% endblock %}
+
+{% block site-tour %}
+	<li style="padding-top:10px"><button id="btn-site-tour-setup-geocoding" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -36,7 +42,7 @@
 <div id="content-main">
     <h3 class="page-header">Geocoding Configuration for <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/{{task_id}}">Task #{{task_id}}</a></h3>
 	<div class="row">
-		<div class="panel panel-default">
+		<div id="panel-field-mapping" class="panel panel-default">
 			<div class="panel-heading">
 				Field Mapping
 			</div>
@@ -97,7 +103,7 @@
     
 	<div class="row">
 		<div class="col-lg-12">
-			<div class="panel panel-primary">
+			<div id="panel-table-preview" class="panel panel-primary">
 				<div class="panel-heading">
                     <a data-toggle="collapse" href="#previewtable" class="panel-heading-link" id="previewswitch">Table Preview 10 rows (click to hide)</a>
 				</div>
@@ -139,6 +145,23 @@
 
 {% block bottomjs %}
 {{ block.super }}
+<!-- JQuery Cookie -->
+<script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+<!-- Enjoyhint JS -->
+<script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
+<script src="{% static 'sitetour/sitetour.js' %}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		// check if cookei exists
+		var visited = $.cookie('visited-setup-geocoding');
+		if (visited == null){
+			var visited = $.cookie('visited-setup-geocoding','yes',{expires:365,path:'/'});
+			var enjoyhint_instance = new EnjoyHint({});
+			enjoyhint_instance.set(enjoyhint_script_steps_setup-geocoding);
+			enjoyhint_instance.run();
+		}
+	});
+</script>
 <!-- page JS -->
 <script>
 $('#previewswitch').click(function(){
