@@ -24,6 +24,7 @@ from util import *
 from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
 from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
+from geocodingtool.settings import CF_GEOTABLE
 from geocodingapp.models import *
 from geocodingapp.forms import *
 
@@ -734,6 +735,41 @@ def start_geocoding(request):
     
     redirect_url = "%s/geocoding/results?task=%d" % (ROOT_APP_URL,task_id)
     return HttpResponseRedirect(redirect_url)
+
+@login_required
+def get_cf_link(request):
+    task_id = None
+    lat = None
+    lng = None
+    redirect_url = None
+    if "task" in request.GET:
+        if request.GET["task"] != 'None':
+            task_id = request.GET["task"]
+    if "lat" in request.GET:
+        if request.GET["lat"] != 'None':
+            lat = float(request.GET["lat"])
+    if "lng" in request.GET:
+        if request.GET["lng"] != 'None':
+            lng = float(request.GET["lng"])
+    if lat and lng:
+        query_str = "Select %s,%s from %s where ST_Contains(geom,ST_Transform(ST_SetSRID(ST_Point(%s,%s),4326),%s))" % (CF_GEOTABLE['col_id'],CF_GEOTABLE['col_name'],CF_GEOTABLE['db_table'],lng,lat,CF_GEOTABLE['srid'])
+        cursor = connection.cursor()
+        cursor.execute(query_str)
+        query_results = cursor.fetchall()
+        if query_results:
+            nb = query_results[0]
+            nb_id = nb[0]
+            nb_name = nb[1]
+            nb_name_url = ' '.join((re.sub(r'([^\s\w]|_)+','',nb_name)).strip().split()).replace(' ','-').lower()
+            redirect_url = "%s%s" % (CF_GEOTABLE['cf_url_nbsummary'],nb_name_url)
+        else:
+            redirect_url = "%s/geocoding/no_cf_link/%s/" % (ROOT_APP_URL,task_id)
+    return HttpResponseRedirect(redirect_url)
+
+@login_required
+@render_to("geocodingapp/no_cf_link.html")
+def no_cf_link(request,task_id):
+    return {"task_id":task_id}
 
 @login_required
 @render_to("geocodingapp/geocoding_results.html")

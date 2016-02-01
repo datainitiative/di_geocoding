@@ -276,6 +276,10 @@ var enjoyhint_script_steps_geocoding_result = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
+		"next .record-cflink": "Click here to see neighborhood summary of this location on Community Facts website.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
 		"next .record-zoom-to-map": "Click here to zoom to the location on the map",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},

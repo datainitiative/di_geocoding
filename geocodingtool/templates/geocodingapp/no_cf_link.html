@@ -1,0 +1,38 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+{% block title %}Neighborhood Not Found | Geocoding Tool{% endblock %}
+{% block extrastyle %}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class='breadcrumb'>
+<li><a href="{% setting 'ROOT_APP_URL' %}/home/">{% trans 'Home' %}</a></li>
+{% if user|has_group:"Superuser" %}
+<li><a href="{% url 'admin:index' %}">{% trans 'Superuser Admin Home' %}</a></li>
+{% endif %}
+{% if user|has_group:"Staff Admin" %}
+<li><a href="{% url 'admin:index' %}geocodingapp/">App Admin</a></li>
+{% endif %}
+<li><a href="{% url 'admin:index' %}geocodingapp/project/">Project List</a></li>
+<li><a href="{% url 'admin:index' %}geocodingapp/task/">Task List</a></li>
+<li>Location Neighborhood Summary</li>
+</ul>
+{% endblock %}
+
+{% block navbar %}<div style="margin-top:-20px;"></div>{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="row">
+		<div class="col-lg-12">
+			<div class="well well-lg">
+				<h3>Neighborhood not found</h3><br/>
+				<p>This location is not in the <a href="http://denvermetrodata.org/about">seven-county metro Denver area <i class="fa fa-external-link fa-sm"></i></a> covered by <a href="http://denvermetrodata.org/">Community Facts <i class="fa fa-external-link fa-sm"></i></a>.</p>
+				<br/>
+				<p>Click <a href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{task_id}}">here</a> to go back to geocoding result page.</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

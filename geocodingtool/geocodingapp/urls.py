@@ -17,6 +17,8 @@ urlpatterns = patterns('geocodingapp.views',
 	url(r'^geocoding/start$','start_geocoding'),
 	url(r'^geocoding/results$','geocoding_result'),
 	url(r'^geocoding/download_results/(?P<task_id>\d+)/$','exportcsv_geocodingresults'),
+	url(r'^geocoding/get_cf_link$','get_cf_link'),
+	url(r'^geocoding/no_cf_link/(?P<task_id>\d+)/$','no_cf_link'),
 	
 	# Test geocoding URL
 	url(r'^geocoding/test$','test_geocoding'),

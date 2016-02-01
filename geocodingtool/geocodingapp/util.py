@@ -32,6 +32,7 @@ from django.template import RequestContext
 from django.db.models.loading import get_model
 from django.template.defaultfilters import slugify
 from django.contrib import admin
+from django.db import connection
 
 # --------------------
 # Application Imports
