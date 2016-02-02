@@ -80,6 +80,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ['title','description','category','start_date','end_date']
     list_filter = ['category']
     inlines = [TaskInline,]
+    search_fields = ('title','description','category__name')
 admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
@@ -87,6 +88,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ['description','project','initiate_date','has_result','geocoding_result_link']
     list_filter = ['project','has_result']
     readonly_fields = ['initiate_date','has_result']
+    search_fields = ('description','project__title')
     
     def geocoding_result_link(self, obj):
         if obj.has_result:
