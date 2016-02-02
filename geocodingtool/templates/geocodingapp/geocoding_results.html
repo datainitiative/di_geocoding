@@ -202,9 +202,16 @@ $('#mapviewswitch').click(function(){
     map.fitBounds(map_points,{padding:[2,2]});
     // Prune Cluster
     var leafletView = new PruneClusterForLeaflet();
+    var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+    var myMarkerIcon = L.icon({
+        iconUrl: myMarkerIconSrc,
+        iconSize: [36,38],
+        popupAnchor: [-3, -13],
+    });
     var markers = [];
     $.each(data_points,function(index,p){
         var marker = new PruneCluster.Marker(p[0],p[1]);
+        marker.data.icon = myMarkerIcon;
         marker.data.popup = p[2];
         markers.push(marker);
         leafletView.RegisterMarker(marker);
