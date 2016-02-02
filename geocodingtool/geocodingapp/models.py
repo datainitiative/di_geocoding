@@ -133,6 +133,34 @@ class ConfidenceLevel(models.Model):
     class Meta:
         db_table = u'confidence_level'
 
+# Model Final Source of Geocoding Result
+class FinalSource(models.Model):
+#    id = models.IntegerField(primary_key=True)
+    name = models.CharField(max_length=200)
+
+    def __unicode__(self):
+        return unicode(self.name)
+    
+    def previous(self):
+        try:
+            previous_records = FinalSource.objects.filter(id__lt=self.id)
+            previous_id = previous_records.order_by('-id')[0].id
+            return FinalSource.objects.get(id=previous_id)
+        except:
+            return None
+        
+    def next(self):
+        try:
+            next_records = FinalSource.objects.filter(id__gt=self.id)
+            next_id = next_records.order_by('id')[0].id
+            return FinalSource.objects.get(id=next_id)
+        except:
+            return None    
+
+    class Meta:
+        db_table = u'final_source'
+        ordering = ['id']
+
 # Model Project
 class Project(models.Model):
 #    id = models.IntegerField(primary_key=True)
@@ -272,6 +300,7 @@ class GeocodingResult(models.Model):
     geocoder = models.ForeignKey('Geocoder',null=True,blank=True)
     confidence_level = models.ForeignKey('ConfidenceLevel',null=True,blank=True)
     accuracy = models.CharField(max_length=100,null=True,blank=True)
+    final_source = models.ForeignKey('FinalSource',default=1)
 #    location_type = models.ForeignKey('LocationType')
 #    match_level = models.ForeignKey('MatchLevel')
     
@@ -311,6 +340,7 @@ class FormattedAddress(models.Model):
     point = models.ForeignKey('Point',null=True,blank=True)
     geocoder = models.ForeignKey('Geocoder',null=True,blank=True)
     confidence_level = models.ForeignKey('ConfidenceLevel',null=True,blank=True)
+    accuracy = models.CharField(max_length=100,null=True,blank=True)
     
     def __unicode__(self):
         return str(self.id)

@@ -60,6 +60,7 @@
                                     <th>Geocoder</th>
                                     <th id="tbheader-confidence">Confidence Level <span title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><i class="fa fa-question-circle"></i></span></th>
                                     <th>Accuracy</th>
+                                    <th>Final Source</th>
 									<th>Neighborhood Summary</th>
                                     <th>Edit</th>
                                 </tr>
@@ -84,6 +85,7 @@
                                             <td><span class="text-danger"><strong>{{r.confidence_level.score}}</strong></span></td>
                                         {% endif %}
                                         <td>{{r.accuracy}}</td>
+                                        <td>{{r.final_source.name}}</td>
 										<td>
 											{% if r.location %}
 												<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a></td>

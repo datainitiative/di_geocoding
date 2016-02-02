@@ -464,6 +464,7 @@ def instant_geocoding(request):
                 print "save point"
                 geocoder = Geocoder.objects.get(name=result['geocoder'])
                 confidence = ConfidenceLevel.objects.get(score=result['confidence'])
+                accuracy = result['accuracy']
                 formattedaddress = result['formattedaddress']
                 print "formatted address: ", formattedaddress
                 try:
@@ -476,6 +477,7 @@ def instant_geocoding(request):
                         point = point,
                         geocoder = geocoder,
                         confidence_level = confidence,
+                        accuracy = accuracy
                     )
                     formatted_address.save()
                 print "save new address"
@@ -640,14 +642,19 @@ def start_geocoding(request):
                 point = [get_formatted_address.point.lat,get_formatted_address.point.lng]
                 geocoder = get_formatted_address.geocoder.name
                 confidence = get_formatted_address.confidence_level.score
-                accuracy = "Address Inventory"
-                tmp_result = {
-                    'point': point,
-                    'geocoder': geocoder,
-                    'confidence': confidence,
-                    'accuracy': accuracy,
-                    'formattedaddress': address                
-                }
+                accuracy = get_formatted_address.accuracy
+                geocoding_result = GeocodingResult(
+                    task = task,
+                    name = result['label'],
+                    address = address,
+                    formatted_address = get_formatted_address,
+                    location = get_formatted_address.point,
+                    geocoder = get_formatted_address.geocoder,
+                    confidence_level = get_formatted_address.confidence_level,
+                    accuracy = accuracy,
+                    final_source = FinalSource.objects.get(id=2)
+                )
+                geocoding_result.save()
             except:
                 print "format fail"
                 try:
@@ -656,29 +663,20 @@ def start_geocoding(request):
                     print "address found in inventory"
                     print get_address
                     get_formatted_address = get_address.formatted_address
-                    print "1"
                     point = [get_formatted_address.point.lat,get_formatted_address.point.lng]
                     geocoder = get_formatted_address.geocoder.name
                     confidence = get_formatted_address.confidence_level.score
-                    accuracy = "Address Inventory"
-                    formatted_address = get_formatted_address.address
-                    print "2"
-                    tmp_result = {
-                        'point': point,
-                        'geocoder': geocoder,
-                        'confidence': confidence,
-                        'accuracy': accuracy,
-                        'formattedaddress': formatted_address                
-                    } 
+                    accuracy = get_formatted_address.accuracy
                     geocoding_result = GeocodingResult(
-                      task = task,
-                      name = result['label'],
-                      address = address,
-                      formatted_address = get_formatted_address,
-                      location = get_formatted_address.point,
-                      geocoder = get_formatted_address.geocoder,
-                      confidence_level = get_formatted_address.confidence_level,
-                      accuracy = accuracy
+                        task = task,
+                        name = result['label'],
+                        address = address,
+                        formatted_address = get_formatted_address,
+                        location = get_formatted_address.point,
+                        geocoder = get_formatted_address.geocoder,
+                        confidence_level = get_formatted_address.confidence_level,
+                        accuracy = accuracy,
+                        final_source = FinalSource.objects.get(id=2)
                     )
                     geocoding_result.save()      
                 except Exception as e:
@@ -709,6 +707,7 @@ def start_geocoding(request):
                                 point = point,
                                 geocoder = geocoder,
                                 confidence_level = confidence,
+                                accuracy = accuracy
                             )
                             formatted_address.save()
                         print "save new address"
@@ -726,7 +725,8 @@ def start_geocoding(request):
                             location = point,
                             geocoder = geocoder,
                             confidence_level = confidence,
-                            accuracy = accuracy
+                            accuracy = accuracy,
+                            final_source = FinalSource.objects.get(id=1)
                         )
                         geocoding_result.save()
 
@@ -791,7 +791,7 @@ def exportcsv_geocodingresults(request,task_id):
     task = Task.objects.get(id=task_id)
     task_results = GeocodingResult.objects.filter(task=task)
     download_data = []
-    headers = ("Label","Address","Lat","Long","Geocoder","Confidence Level","Accuracy")
+    headers = ("Label","Address","Lat","Long","Geocoder","Confidence Level","Accuracy","Final Source")
     for result in task_results:
         row_data = (
             result.name,
@@ -800,7 +800,8 @@ def exportcsv_geocodingresults(request,task_id):
             result.location.lng,
             result.geocoder.name,
             result.confidence_level.score,
-            result.accuracy
+            result.accuracy,
+            result.final_source.name
         )
         download_data.append(row_data)
        

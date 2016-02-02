@@ -47,6 +47,11 @@ class ConfidenceLevelAdmin(admin.ModelAdmin):
     list_display = ['score','name']
 admin.site.register(ConfidenceLevel,ConfidenceLevelAdmin)
 
+class FinalSourceAdmin(admin.ModelAdmin):
+    fields = ['name']
+    list_display = ['id','name']
+admin.site.register(FinalSource,FinalSourceAdmin)
+
 class TaskInline(admin.TabularInline):
     model = Task
     extra = 0
@@ -99,13 +104,13 @@ class AddressInventoryAdmin(admin.ModelAdmin):
 admin.site.register(AddressInventory,AddressInventoryAdmin)
 
 class GeocodingResultAdmin(admin.ModelAdmin):
-    fields = ['task','name','address','formatted_address','location','geocoder','confidence_level','accuracy']
-    list_display = ['id','task','name','address','location','geocoder','confidence_level','accuracy']
+    fields = ['task','name','address','formatted_address','location','geocoder','confidence_level','accuracy','final_source']
+    list_display = ['id','task','name','address','location','geocoder','confidence_level','accuracy','final_source']
 admin.site.register(GeocodingResult,GeocodingResultAdmin)
 
 class FormattedAddressAdmin(admin.ModelAdmin):
-    fields = ['address','point','geocoder','confidence_level']
-    list_display = ['address','point','geocoder','confidence_level']
+    fields = ['address','point','geocoder','confidence_level','accuracy']
+    list_display = ['address','point','geocoder','confidence_level','accuracy']
 admin.site.register(FormattedAddress,FormattedAddressAdmin)
 
 class GeocoderUsageAdmin(admin.ModelAdmin):
