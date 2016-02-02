@@ -124,6 +124,11 @@
 			</div>
 		</div>
 	</div>
+    <div class="row">
+		<div class="col-lg-12">
+            <div id="map-image"></div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
@@ -204,8 +209,10 @@ $('#mapviewswitch').click(function(){
     var leafletView = new PruneClusterForLeaflet();
     function createIcon(data,category){
         var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+        var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
         var myMarkerIcon = L.icon({
             iconUrl: myMarkerIconSrc,
+            iconRetinaUrl: myMarkerIconSrcRetina,
             iconSize: [32,34],
             popupAnchor: [-3, -12],
         });
