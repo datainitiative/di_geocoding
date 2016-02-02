@@ -205,8 +205,8 @@ $('#mapviewswitch').click(function(){
     var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
     var myMarkerIcon = L.icon({
         iconUrl: myMarkerIconSrc,
-        iconSize: [36,38],
-        popupAnchor: [-3, -13],
+        iconSize: [32,34],
+        popupAnchor: [-3, -12],
     });
     var markers = [];
     $.each(data_points,function(index,p){
