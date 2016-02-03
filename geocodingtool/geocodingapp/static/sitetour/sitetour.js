@@ -284,9 +284,13 @@ var enjoyhint_script_steps_geocoding_result = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next #panel-map-header": "The locations are also displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
+		"next #panel-map-header": "The locations are displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 		"nextButton" : {className: "myNext2Line", text: "Next"},
+	},
+	{
+		"next #div-size-slider": "User this slider to change cluster size. Map points will become more clustered as the cluster size increase.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
 		"next #btn-download-csv": "Click this button to download geocoding results as a CSV file.",
