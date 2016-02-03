@@ -9,11 +9,45 @@
 <link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.css">
 <!-- Prune Cluster -->
 <link rel="stylesheet" href="{% static 'prunecluster/LeafletStyleSheet.css' %}">
+<!-- Bootstrap-Slider -->
+<link rel="stylesheet" href="{% static 'bootstrap-slider/css/bootstrap-slider.min.css' %}">
 <!-- Enjoyhint style -->
 <link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
 <style>
 #map { height: 600px; }
 .panel-heading-link { color: #FFF!important;}
+#div-size-slider {
+    display: block;
+    width: 340px;
+    position: absolute;
+    right: 30px;
+    top: 55px;
+    margin-top: 12px;
+    margin-right: 12px;
+    padding: 5px;
+    background-color: #FFF;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+    border-radius: 4px;
+    z-index: 800;
+}
+.my-control-left {
+    padding-left: 5px!important;
+    padding-right: 0px!important;
+}
+.my-control-right {
+    padding-left: 0px!important;
+    padding-right: 5px!important;
+}
+.slider {
+    width: 95%!important;
+    float: right!important;
+}
+#input-cluster-size-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-size-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
 </style>
 {% endblock %}
 
@@ -111,6 +145,12 @@
                     <div class="panel-body">
                         <div>
                             <div id="map"></div>
+                            <div id="div-size-slider">
+                                <span class="col-sm-3 pull-left my-control-left">Cluster Size</span>
+                                <div class="col-sm-9 pull-right my-control-right">
+                                    <input id="input-cluster-size" data-slider-id='input-cluster-size-slider' type="text" data-slider-min="20" data-slider-max="500" data-slider-step="20" data-slider-value="120">
+                                </div>                               
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,6 +189,8 @@
 <script src='{% static "prunecluster/PruneCluster.js"%}'></script>
 <!-- JQuery Cookie -->
 <script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+<!-- Bootstrap-Slider -->
+<script src="{% static 'bootstrap-slider/bootstrap-slider.min.js' %}"></script>
 <!-- Enjoyhint JS -->
 <script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
 <script src="{% static 'sitetour/sitetour.js' %}"></script>
@@ -209,6 +251,7 @@ $('#mapviewswitch').click(function(){
     map.fitBounds(map_points,{padding:[2,2]});
     // Prune Cluster
     var leafletView = new PruneClusterForLeaflet();
+    // Set custom marker icon and create on the fly
     function createIcon(data,category){
         var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
         var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
@@ -223,12 +266,24 @@ $('#mapviewswitch').click(function(){
     var markers = [];
     $.each(data_points,function(index,p){
         var marker = new PruneCluster.Marker(p[0],p[1]);
-        marker.data.icon = createIcon;
+        marker.data.icon = createIcon; // create icon on the fly
         marker.data.popup = p[2];
         markers.push(marker);
         leafletView.RegisterMarker(marker);
     });
     map.addLayer(leafletView);
+    
+    // dynamic cluster size
+    $("#input-cluster-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateSize = function(){
+        leafletView.Cluster.Size = parseInt(this.value);
+        leafletView.ProcessView();
+    };
+    $("#input-cluster-size").change(updateSize);
 	
 	$(".record-zoom-to-map").click(function(){
 		var value = this.id.split(",");
@@ -239,101 +294,4 @@ $('#mapviewswitch').click(function(){
 		tmp_marker.bindPopup(name).openPopup();
 	});
 </script>
-<!--
-<script src='{% static "flot/excanvas.min.js"%}'></script>
-<script src='{% static "flot/jquery.flot.js"%}'></script>
-<script src='{% static "flot/jquery.flot.pie.js"%}'></script>
-<script src='{% static "flot.tooltip/js/jquery.flot.tooltip.min.js"%}'></script>
-<script>
-//Flot Pie Chart Data
-$(function() {
-    var data = jQuery.parseJSON('{{piechart_data|safe}}');
-
-    var plotObj = $.plot($("#flot-pie-chart"), data, {
-        series: {
-            pie: {
-                show: true
-            }
-        },
-        grid: {
-            hoverable: true
-        },
-        tooltip: true,
-        tooltipOpts: {
-            content: "%p.0%, %s", // show percentages, rounding to 2 decimal places
-            shifts: {
-                x: 20,
-                y: 0
-            },
-            defaultTheme: false
-        }
-    });
-});
-</script>
--->
-
-<!-- Pie and Bar Tables JavaScript -->
-<!--
-<script src='{% static "d3-3.5.5/d3.min.js" %}'></script>
-<script src='{% static "customdashboard/barandpiechart/barandpiechart.js"%}'></script>
-<script src='{% static "customdashboard/barandpiechart/barandpiechart2.js"%}'></script>
-<script>
-var barAndPieChartData1All = jQuery.parseJSON('{{barpiechart_data_1_all|safe}}');
-var barAndPieChartData1Goal = jQuery.parseJSON('{{barpiechart_data_1_goal|safe}}');
-var barAndPieChartData2 = jQuery.parseJSON('{{barpiechart_data_2|safe}}');
-var barAndPieChartData2Q1 = jQuery.parseJSON('{{barpiechart_data_2_q1|safe}}');
-var barAndPieChartData2Q2 = jQuery.parseJSON('{{barpiechart_data_2_q2|safe}}');
-var barAndPieChartData2Q3 = jQuery.parseJSON('{{barpiechart_data_2_q3|safe}}');
-var barAndPieChartData2Q4 = jQuery.parseJSON('{{barpiechart_data_2_q4|safe}}');
-dashboard('#bar-pie-chart',barAndPieChartData1All);
-dashboard2('#bar-pie-chart2',barAndPieChartData2);
-
-$("#bar-pie-chart-1-checkbox").change(function(){
-  if($(this).is(":checked")){
-    $("#bar-pie-chart").empty();
-    dashboard('#bar-pie-chart',barAndPieChartData1Goal);
-  }
-  else
-  {
-    $("#bar-pie-chart").empty();
-    dashboard('#bar-pie-chart',barAndPieChartData1All);
-  }
-});
-
-$("#bar-pie-chart-2-select").change(function(){
-    if($("#bar-pie-chart-2-select option:selected").val() == "1"){
-        $("#bar-pie-chart2").empty();
-        dashboard2('#bar-pie-chart2',barAndPieChartData2Q1);
-    }
-    else if($("#bar-pie-chart-2-select option:selected").val() == "2"){
-        $("#bar-pie-chart2").empty();
-        dashboard2('#bar-pie-chart2',barAndPieChartData2Q2);
-    }
-    else if($("#bar-pie-chart-2-select option:selected").val() == "3"){
-        $("#bar-pie-chart2").empty();
-        dashboard2('#bar-pie-chart2',barAndPieChartData2Q3);
-    }
-    else if($("#bar-pie-chart-2-select option:selected").val() == "4"){
-        $("#bar-pie-chart2").empty();
-        dashboard2('#bar-pie-chart2',barAndPieChartData2Q4);
-    }
-    else if($("#bar-pie-chart-2-select option:selected").val() == "0"){
-        $("#bar-pie-chart2").empty();
-        dashboard2('#bar-pie-chart2',barAndPieChartData2);
-    }
-});
-</script>
--->
-<!-- Data Tables JavaScript -->
-<!--
-<script src='{% static "datatables/media/js/jquery.dataTables.min.js"%}'></script>
-<script src='{% static "datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js"%}'></script>
-<script>
-$(document).ready(function() {
-	$('#data-table').DataTable({
-			responsive: true
-	});
-});
-</script>
--->
 {% endblock %}
