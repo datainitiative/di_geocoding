@@ -166,7 +166,7 @@ class FinalSource(models.Model):
 class Project(models.Model):
 #    id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=200)
-    description = models.TextField(max_length=500,null=True,blank=True)
+    description = models.TextField(max_length=500)
     category = models.ForeignKey('ProjectCategory')
     url = models.URLField(max_length=5000,null=True,blank=True)
     start_date = models.DateField()
