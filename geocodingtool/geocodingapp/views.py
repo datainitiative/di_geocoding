@@ -61,8 +61,22 @@ def update_all_geocoders_usage():
                     geocoder_status.append({'name':geocoder.name,'limit':str(total_limit),'limit_unit':geocoder.limit_unit})
                 except Exception as e:
                     print e
+            elif geocoder.name == "Bing Maps":
+                timenow = datetime.datetime.now()
+                today_date = "%s/%s" % (timenow.month,timenow.day)
+                if today_date == "1/1":
+                    geocoder.limit = 125000
+                    geocoder.save()
+                    geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
+            elif geocoder.name == "Mapquest":
+                timenow = datetime.datetime.now()
+                today_date = "%s" % timenow.day
+                if today_date == "1":
+                    geocoder.limit = 15000
+                    geocoder.save()
+                    geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})            
             else:
-                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})    
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
     return geocoder_status
 
 # Home page
@@ -85,6 +99,24 @@ def home(request):
 '''-----------------------
 Functions
 -----------------------'''
+def update_google_geocoder_usage(usage_id=None,record_num=0,new_usage=True):
+    if new_usage:
+        google_geocoder_usage = GeocoderUsage(
+                geocoder = Geocoder.objects.get(name="Google Maps"),
+                geocoding_record_num = record_num
+            )
+    else:
+        google_geocoder_usage = GeocoderUsage.objects.get(id=usage_id)
+        google_geocoder_usage.geocoding_record_num += 1
+    google_geocoder_usage.save()
+    return google_geocoder_usage
+
+def substract_geocoder_usage(geocoder_name=None):
+    if geocoder_name and (geocoder_name != ""):
+        geocoder = Geocoder.objects.get(name=geocoder_name)
+        geocoder.limit -= 1
+        geocoder.save()
+
 def api_geocoding(address,usage_id=None):
     t1 = time.time()
     
@@ -276,6 +308,7 @@ def api_geocoding(address,usage_id=None):
                 bbox = None                     
                 # Bing geocoder
                 g = geocoder.bing(address,key=BING_API_KEY)
+                substract_geocoder_usage("Bing Maps")
                 print g.geojson
                 if g.geojson['properties']['ok']:
                     try:
@@ -420,18 +453,6 @@ def api_geocoding(address,usage_id=None):
     }
     
     return(result)
-
-def update_google_geocoder_usage(usage_id=None,record_num=0,new_usage=True):
-    if new_usage:
-        google_geocoder_usage = GeocoderUsage(
-                geocoder = Geocoder.objects.get(name="Google Maps"),
-                geocoding_record_num = record_num
-            )
-    else:
-        google_geocoder_usage = GeocoderUsage.objects.get(id=usage_id)
-        google_geocoder_usage.geocoding_record_num += 1
-    google_geocoder_usage.save()
-    return google_geocoder_usage
 
 @login_required
 def instant_geocoding(request):
