@@ -49,7 +49,9 @@
 			<div class="panel-body">
 				<p class="lead">Select column name to match the field.</p>
                 <div class="form-group input-group">
-                    <span class="input-group-addon">Address &nbsp;</span>
+                    <span class="input-group-addon">Address 
+						<span title="Street Address"><i class="fa fa-question-circle"></i></span>
+					</span>
                     <select id="sel-address" class="form-control">
                         <option>None</option>
                         {% for header in preview_table_headers %}
@@ -59,7 +61,7 @@
                 </div>
 
                 <div class="form-group input-group">
-                    <span class="input-group-addon">City &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span class="input-group-addon">City &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <select id="sel-city" class="form-control">
                         <option>None</option>
                         {% for header in preview_table_headers %}
@@ -69,7 +71,7 @@
                 </div>
 
                 <div class="form-group input-group">
-                    <span class="input-group-addon">State &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span class="input-group-addon">State &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                     <select id="sel-state" class="form-control">
                         <option>None</option>
                         {% for header in preview_table_headers %}
@@ -79,7 +81,7 @@
                 </div>
 
                 <div class="form-group input-group">
-                    <span class="input-group-addon">Zip Code&nbsp;</span>
+                    <span class="input-group-addon">Zip Code&nbsp;&nbsp;&nbsp;</span>
                     <select id="sel-zip" class="form-control">
                         <option>None</option>
                         {% for header in preview_table_headers %}
@@ -89,7 +91,9 @@
                 </div>
 
                 <div class="form-group input-group">
-                    <span class="input-group-addon">Label &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    <span class="input-group-addon">Label 
+						<span title="Unique Identifier / Business Name"><i class="fa fa-question-circle"></i></span> &nbsp;&nbsp;&nbsp;&nbsp;
+					</span>
                     <select id="sel-label" class="form-control">
                         <option>None</option>
                         {% for header in preview_table_headers %}

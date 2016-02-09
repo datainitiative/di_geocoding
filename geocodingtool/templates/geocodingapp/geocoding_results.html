@@ -197,7 +197,7 @@
 <!-- page JS -->
 <script>
 $(document).ready(function() {
-    $('#dataTables-example').DataTable({
+    var table = $('#dataTables-example').DataTable({
             responsive: true,
             "order":[[5,"asc"]],
     });
@@ -210,6 +210,17 @@ $(document).ready(function() {
         enjoyhint_instance.set(enjoyhint_script_steps_geocoding_result);
         enjoyhint_instance.run();
     }
+	
+	// add a question mark next to search box
+	$("#dataTables-example_filter > label > input").attr("placeholder","search text in results");
+	$("#dataTables-example_filter").append('<div id="search-box-wrapper" class="form-group input-group"></div>');
+	$("#dataTables-example_filter > label > input").appendTo("#search-box-wrapper");
+	$("#search-box-wrapper").width("100%").append('<span class="input-group-btn"><button id="clear-search" class="btn btn-default btn-sm" title="Clear Search"><i class="fa fa-close"></i></button></span>');
+	$("#dataTables-example_filter > label").remove();
+	$("#clear-search").click(function(){
+		console.log(table);
+		table.search('').draw();
+	});
 });
 $('#mapviewswitch').click(function(){
     $(this).html(function(){

@@ -233,7 +233,7 @@ var enjoyhint_script_steps_setup_geocoding = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next #sel-label": "Select the column that contains the name for the address, eg. business name, school name, etc. This field is required.",
+		"next #sel-label": "Select the column that contains the unique identifier or the name of the address, eg. business name, school name, etc. This field is required.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
