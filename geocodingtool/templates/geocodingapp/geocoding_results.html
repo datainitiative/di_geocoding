@@ -259,7 +259,8 @@ $('#mapviewswitch').click(function(){
             iconUrl: myMarkerIconSrc,
             iconRetinaUrl: myMarkerIconSrcRetina,
             iconSize: [32,34],
-            popupAnchor: [-3, -12],
+			iconAnchor: [12,33],
+            popupAnchor: [1,-28],
         });
         return myMarkerIcon;
     }
@@ -288,9 +289,18 @@ $('#mapviewswitch').click(function(){
 	$(".record-zoom-to-map").click(function(){
 		var value = this.id.split(",");
 		var coord = [value[0],value[1]];
-		var name = value[2]
-		var tmp_marker = L.marker(coord).addTo(map);
-		map.setView(coord,16)
+		var name = value[2];
+		var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+        var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
+        var myMarkerIcon = L.icon({
+            iconUrl: myMarkerIconSrc,
+            iconRetinaUrl: myMarkerIconSrcRetina,
+            iconSize: [32,34],
+			iconAnchor: [12,33],
+            popupAnchor: [1,-28],
+        });
+		var tmp_marker = L.marker(coord,{icon:myMarkerIcon}).addTo(map);
+		map.setView(coord,16);
 		tmp_marker.bindPopup(name).openPopup();
 	});
 </script>
