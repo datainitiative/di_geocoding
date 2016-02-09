@@ -555,7 +555,10 @@ def geocoding_setup(request):
         for row in ws.iter_rows(preview_range):
             tmp_row = []
             for cell in row:
-                tmp_row.append(cell.value)
+                if cell.value:
+                    tmp_row.append(cell.value)
+                else:
+                    tmp_row.append("")
             preview_table.append(tmp_row)
     ## read csv file
     elif file_ext in CSV_FILE_EXTENSIONS:
