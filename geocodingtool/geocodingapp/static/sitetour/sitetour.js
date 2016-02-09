@@ -25,7 +25,7 @@ var enjoyhint_script_steps_home_page = [
 		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
-		"click #btn-geocode": "Click to start geocoding.",
+		"click #btn-geocode": "Press 'Enter' or click this button to start geocoding.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{

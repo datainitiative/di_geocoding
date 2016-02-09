@@ -243,6 +243,9 @@ $(document).ready(function(){
 		});
 	}
 	$("#btn-geocode").click(function(){geocode();});
+	$("#input-address").keypress(function(event){
+		if (event.which == 13) {geocode();}
+	});
 });
 </script>
 {% endblock %}
