@@ -207,7 +207,7 @@ $("#btn-site-tour-post-add-task").click(function(){
 // Setup Geocoding
 var enjoyhint_script_steps_setup_geocoding = [
 	{
-		"next #panel-field-mapping": "Mapping the 'columns' in address file to the 'fields' required by the geocoder.",
+		"next #panel-field-mapping-header": "Mapping the 'columns' in address file to the 'fields' required by the geocoder.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{

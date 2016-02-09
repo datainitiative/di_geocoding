@@ -67,14 +67,14 @@ def update_all_geocoders_usage():
                 if today_date == "1/1":
                     geocoder.limit = 125000
                     geocoder.save()
-                    geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
             elif geocoder.name == "Mapquest":
                 timenow = datetime.datetime.now()
                 today_date = "%s" % timenow.day
                 if today_date == "1":
                     geocoder.limit = 15000
                     geocoder.save()
-                    geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})            
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
             else:
                 geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
     return geocoder_status
