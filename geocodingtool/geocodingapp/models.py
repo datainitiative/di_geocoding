@@ -74,6 +74,7 @@ class Geocoder(models.Model):
 #    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=200)
     limit = models.IntegerField(default=-1) # -1 stands for unlimited geocoding requests
+    limit_unit = models.CharField(max_length=50,null=True,blank=True)
 
     def __unicode__(self):
         return unicode(self.name)

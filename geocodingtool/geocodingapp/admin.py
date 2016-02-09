@@ -30,8 +30,8 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
 admin.site.register(ProjectCategory,ProjectCategoryAdmin)
 
 class GeocoderAdmin(admin.ModelAdmin):
-    fields = ['name','limit']
-    list_display = ['name','limit']
+    fields = ['name','limit','limit_unit']
+    list_display = ['name','limit','limit_unit']
 admin.site.register(Geocoder,GeocoderAdmin)
 
 class LocationTypeAdmin(admin.ModelAdmin):

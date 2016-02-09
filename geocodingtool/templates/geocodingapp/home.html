@@ -109,9 +109,9 @@
 							</thead>
 							<tbody>
 								<tr>
-									<td><strong>Allowence</strong></td>
+									<td><strong>Balance</strong></td>
 									{% for geocoder in geocoder_status %}
-										<td>{{geocoder.limit}}</td>
+										<td>{{geocoder.limit}} {{geocoder.limit_unit}}</td>
 									{% endfor %}
 								</tr>
 							</tbody>

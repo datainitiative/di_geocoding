@@ -43,7 +43,7 @@ def update_all_geocoders_usage():
     geocoder_status = []
     for geocoder in geocoders:
         if geocoder.limit == -1:
-            geocoder_status.append({'name':geocoder.name,'limit':"Unlimited"})
+            geocoder_status.append({'name':geocoder.name,'limit':"Unlimited",'limit_unit':""})
         elif geocoder.limit > -1:
             if geocoder.name == "Google Maps":
                 try:
@@ -58,11 +58,11 @@ def update_all_geocoders_usage():
                             gu.save()
                         else:
                             total_limit -= gu.geocoding_record_num
-                    geocoder_status.append({'name':geocoder.name,'limit':str(total_limit)})
+                    geocoder_status.append({'name':geocoder.name,'limit':str(total_limit),'limit_unit':geocoder.limit_unit})
                 except Exception as e:
                     print e
             else:
-                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit)})    
+                geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})    
     return geocoder_status
 
 # Home page
