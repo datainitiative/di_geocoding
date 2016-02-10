@@ -289,7 +289,15 @@ var enjoyhint_script_steps_geocoding_result = [
 		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
 	{
+		"next .leaflet-control-layers": "Use layer control to switch between Cluster Map visualization and Heat Map visualization.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
 		"next #div-size-slider": "User this slider to change cluster size. Map points will become more clustered as the cluster size increase.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #div-size-slider": "When Heat Map layer is selected, use this slider to change radius size.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{

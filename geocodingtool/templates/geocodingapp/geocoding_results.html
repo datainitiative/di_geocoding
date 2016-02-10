@@ -16,11 +16,11 @@
 <style>
 #map { height: 600px; }
 .panel-heading-link { color: #FFF!important;}
-#div-size-slider {
+.size-slider {
     display: block;
     width: 340px;
     position: absolute;
-    right: 30px;
+    right: 150px;
     top: 55px;
     margin-top: 12px;
     margin-right: 12px;
@@ -46,6 +46,12 @@
     background: #009FE3;
 }
 #input-cluster-size-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
+#input-cluster-radius-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-radius-slider .slider-selection {
     background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
 }
 </style>
@@ -145,10 +151,16 @@
                     <div class="panel-body">
                         <div>
                             <div id="map"></div>
-                            <div id="div-size-slider">
+                            <div id="div-size-slider" class="size-slider">
                                 <span class="col-sm-3 pull-left my-control-left">Cluster Size</span>
                                 <div class="col-sm-9 pull-right my-control-right">
                                     <input id="input-cluster-size" data-slider-id='input-cluster-size-slider' type="text" data-slider-min="20" data-slider-max="500" data-slider-step="20" data-slider-value="120">
+                                </div>                               
+                            </div>
+							<div id="div-radius-slider" class="size-slider">
+                                <span class="col-sm-3 pull-left my-control-left">Radius Size</span>
+                                <div class="col-sm-9 pull-right my-control-right">
+                                    <input id="input-radius-size" data-slider-id='input-radius-size-slider' type="text" data-slider-min="20" data-slider-max="50" data-slider-step="5" data-slider-value="25">
                                 </div>                               
                             </div>
                         </div>
@@ -187,6 +199,8 @@
 <script src="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.js"></script>
 <!-- Prune Cluster -->
 <script src='{% static "prunecluster/PruneCluster.js"%}'></script>
+<!-- Leaflet Heat -->
+<script src='{% static "leaflet-heat/leaflet-heat.js"%}'></script>
 <!-- JQuery Cookie -->
 <script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
 <!-- Bootstrap-Slider -->
@@ -196,13 +210,14 @@
 <script src="{% static 'sitetour/sitetour.js' %}"></script>
 <!-- page JS -->
 <script>
+$("#div-radius-slider").hide();
 $(document).ready(function() {
     var table = $('#dataTables-example').DataTable({
             responsive: true,
             "order":[[5,"asc"]],
     });
     
-    // check if cookei exists
+    // check if cookie exists
     var visited = $.cookie('visited-geocoding-result');
     if (visited == null){
         var visited = $.cookie('visited-geocoding-result','yes',{expires:365,path:'/'});
@@ -236,15 +251,20 @@ $('#mapviewswitch').click(function(){
         attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
         maxZoom: 16
     }).addTo(map);
+	var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+        attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+    }).addTo(map);
 	*/
+	
 	var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
 		subdomains: 'abcd',
 		maxZoom: 19
 	}).addTo(map);
-    var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-        attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
-    }).addTo(map);
+	
+	var Esri_WorldStreetMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+		attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+	});
     
     // ESRI Leaflet
     var arcgisOnline = L.esri.Geocoding.arcgisOnlineProvider();
@@ -304,6 +324,23 @@ $('#mapviewswitch').click(function(){
     };
     $("#input-cluster-size").change(updateSize);
 	
+	// heatmap
+	var heatMap = L.heatLayer(map_points,{radius:25,max:0.05,blur:10});
+	// dynamic radius size
+    $("#input-radius-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateRadiusSize = function(){
+        console.log("updating radius size");
+		console.log(heatMap.options.radius);
+		heatMap.setOptions({radius:parseInt(this.value),max:0.05,blur:10});
+		heatMap.redraw();
+    };
+    $("#input-radius-size").change(updateRadiusSize);
+	
+	// Zoom to map from table
 	$(".record-zoom-to-map").click(function(){
 		var value = this.id.split(",");
 		var coord = [value[0],value[1]];
@@ -321,5 +358,35 @@ $('#mapviewswitch').click(function(){
 		map.setView(coord,16);
 		tmp_marker.bindPopup(name).openPopup();
 	});
+	
+	// Map layer control
+	/*
+	var baseMaps = {
+		"Grayscale": CartoDB_Positron,
+		"Streets": Esri_WorldStreetMap
+	};
+	var overlayMaps = {
+		"Cluster": leafletView,
+		"Heatmap": heatMap
+	};
+	*/
+	var baseMaps = {
+		"Cluster Map": leafletView,
+		"Heat Map": heatMap
+	};
+	var layerControl = L.control.layers(baseMaps).addTo(map);
+	
+	function changeBaseLayer(e,layer,name){
+		if (e.name == "Heat Map"){
+			$("#div-size-slider").hide();
+			$("#div-radius-slider").show();
+		}
+		else if(e.name == "Cluster Map"){
+			$("#div-size-slider").show();
+			$("#div-radius-slider").hide();
+		}
+	}
+	
+	map.on('baselayerchange',changeBaseLayer);
 </script>
 {% endblock %}
