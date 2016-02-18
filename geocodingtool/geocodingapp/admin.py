@@ -84,11 +84,17 @@ class ProjectAdmin(admin.ModelAdmin):
 admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
-    fields = ['description','project','note','initiate_date','file']
-    list_display = ['description','project','initiate_date','has_result','geocoding_result_link']
-    list_filter = ['project','project__category','has_result']
+    fields = ['description','project','note','initiate_date','file','owner']
+    list_display = ['description','project','initiate_date','has_result','geocoding_result_link','owner']
+    list_filter = ['project','project__category','has_result','owner']
     readonly_fields = ['initiate_date']
     search_fields = ('description','project__title')
+
+    def save_model(self,request,obj,form,change):
+        # when adding new Task, set owner to be logged in user by default
+        if not change:
+            obj.owner = request.user
+        obj.save()
     
     def geocoding_result_link(self, obj):
         if obj.has_result:

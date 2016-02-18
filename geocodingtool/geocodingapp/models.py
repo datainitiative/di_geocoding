@@ -204,6 +204,7 @@ class Task(models.Model):
     note = models.TextField(max_length=500,null=True,blank=True)
     file = models.FileField(max_length=500,upload_to=STORAGE_ROOTPATH+"/upload/")
     has_result = models.BooleanField(default=False)
+    owner = models.ForeignKey(User,null=True,blank=True)     
     
     def __unicode__(self):
         return str(self.id)
@@ -223,6 +224,39 @@ class Task(models.Model):
             return Task.objects.get(id=next_id)
         except:
             return None
+        
+    def _get_user_full_name(self):
+        if self.owner.first_name:
+            first_name = self.owner.first_name
+        else:
+            first_name = ""
+        if self.owner.last_name:
+            last_name = self.owner.last_name
+        else:
+            last_name = ""
+        return "%s %s" % (first_name,last_name)
+    _get_user_full_name.short_description = "Owner Name"
+    
+    def _get_user_first_name(self):
+        if self.user.first_name:
+         return self.user.first_name
+        else:
+         return ""
+    _get_user_first_name.short_description = "First Name"
+    
+    def _get_user_last_name(self):
+        if self.user.last_name:
+            return self.user.last_name
+        else:
+            return ""
+    _get_user_last_name.short_description = "Last Name"
+    
+    def _get_user_email(self):
+        if self.user.email:
+            return self.user.email
+        else:
+            return ""
+    _get_user_email.short_description = "Email Address"    
         
     class Meta:
         db_table = u'task'
