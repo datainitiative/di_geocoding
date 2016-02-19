@@ -204,7 +204,7 @@ class Task(models.Model):
     note = models.TextField(max_length=500,null=True,blank=True)
     file = models.FileField(max_length=500,upload_to=STORAGE_ROOTPATH+"/upload/")
     has_result = models.BooleanField(default=False)
-    owner = models.ForeignKey(User,null=True,blank=True)     
+    owner = models.ForeignKey(User)    
     
     def __unicode__(self):
         return str(self.id)

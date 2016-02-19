@@ -87,7 +87,7 @@ class TaskAdmin(admin.ModelAdmin):
     fields = ['description','project','note','initiate_date','file','owner']
     list_display = ['description','project','initiate_date','has_result','geocoding_result_link','owner']
     list_filter = ['project','project__category','has_result','owner']
-    readonly_fields = ['initiate_date']
+    readonly_fields = ['initiate_date','owner']
     search_fields = ('description','project__title')
 
     def save_model(self,request,obj,form,change):
