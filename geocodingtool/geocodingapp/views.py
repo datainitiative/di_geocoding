@@ -36,6 +36,80 @@ from openpyxl import load_workbook
 from openpyxl.utils import (_get_column_letter)
 
 '''-----------------------
+User functions
+-----------------------'''   
+# Register
+@render_to("geocodingapp/register.html")
+def register(request):
+    if request.method == 'POST':
+        signup_form = UserCreationForm(request.POST)
+        if signup_form.is_valid():
+            new_user = signup_form.save()
+            user = authenticate(username=signup_form.cleaned_data["username"], password=signup_form.cleaned_data["password2"])
+            login(request, user)
+            if "next" in request.GET:
+                app_name = request.GET["next"].replace(APP_SERVER_URL,"").partition("/")[2].partition("/")[0]
+                return HttpResponseRedirect(request.GET["next"])
+            else:
+                url = request.META["HTTP_REFERER"]
+                if url.partition("/?next=/")[1] == "":
+                    if APP_SERVER_URL == "":
+                        # a trick for localhost
+                        app_name = url.partition("http://")[2].replace(SERVER_URL,"").partition("/")[2].partition("/")[0]
+                    else:
+                        app_name = url.partition("http://")[2].replace(SERVER_URL,"").replace(APP_SERVER_URL,"").partition("/")[2].partition("/")[0]
+                else:
+                    app_name = url.partition("/?next=/")[2].partition("/")[0]
+                return HttpResponseRedirect('%s/%s/home/' % (APP_SERVER_URL,app_name))            
+        else:
+            error_msg = "Please check your register information."
+            return {'title':"Sign up",'error_msg':error_msg,'signup_form':signup_form}
+    else:
+        signup_form = UserCreationForm()
+    return {'title':"Sign up",'signup_form':signup_form}
+
+
+# User Profile
+@login_required
+@render_to("geocodingapp/user_profile.html")
+def user_profile(request):
+    user = request.user
+    if request.method == 'GET':
+        user_profile_form = UserProfileForm(instance=user)
+    elif request.method == 'POST':
+        user_profile_form = UserProfileForm(data=request.POST, instance=user)
+        if user_profile_form.is_valid():
+            user_profile_form.save()
+            messages.info(request, "User profile was changed successfully.")
+            if 'save' in request.POST:
+                if "next" in request.GET:
+                    #app_name = request.GET["next"].replace(APP_SERVER_URL,"").partition("/")[2].partition("/")[0]
+                    return HttpResponseRedirect(request.GET["next"])
+                else:
+                    return HttpResponseRedirect('%s/home/' % ROOT_APP_URL)                
+        else:
+            messages.error(request, "Please correct the errors below.")
+    return {'user_name':user.username,'user_profile_form':user_profile_form}
+
+# User Change Password
+@login_required
+@render_to("geocodingapp/user_password.html")
+def user_change_password(request):
+    user = request.user
+    if request.method == 'GET':
+        user_password_form = PasswordChangeForm(user)
+    elif request.method == 'POST':
+        user_password_form = PasswordChangeForm(user,request.POST)
+        if user_password_form.is_valid():
+            user_password_form.save()
+            messages.info(request, "User password was changed successfully.")
+            return HttpResponseRedirect('%s/user/profile/' % ROOT_APP_URL)
+        else:
+            messages.error(request, "Please correct the errors below.")
+    return {'user_name':user.username,'user_password_form':user_password_form}
+
+
+'''-----------------------
 Home Page
 -----------------------'''
 def update_all_geocoders_usage():
@@ -95,6 +169,16 @@ def home(request):
         "geocoder_status": geocoder_status,
     }
 
+# Dashboard Page
+@login_required
+@render_to("geocodingapp/dashboard.html")
+def dashboard(request):
+    user = request.user
+    tasks = Task.objects.filter(owner=user)
+    return {
+        "user": user,
+        "tasks": tasks,
+    }
 
 '''-----------------------
 Functions
