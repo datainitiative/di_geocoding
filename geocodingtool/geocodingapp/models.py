@@ -170,7 +170,7 @@ class Project(models.Model):
     category = models.ForeignKey('ProjectCategory')
     url = models.URLField(max_length=5000,null=True,blank=True)
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField(verbose_name="Due Date")
     
     def __unicode__(self):
         return unicode(self.title)
