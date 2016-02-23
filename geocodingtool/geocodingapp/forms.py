@@ -12,7 +12,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 # Import from general utilities
 from util import *
 
-from geocodingtool.models import *
+from geocodingapp.models import *
 
 # User Forms
 class UserProfileForm(UserChangeForm):

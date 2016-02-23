@@ -1,0 +1,238 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+{% block title %}Home | Geocoding Tool{% endblock %}
+{% block extrastyle %}
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.css" />
+<!-- Enjoyhint style -->
+<link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
+<style>
+#map { height: 600px; }
+.form-group input[type=text]{height: 34px!important;}
+</style>
+{% endblock %}
+
+{% block site-tour %}
+	<li style="padding-top:10px"><button id="btn-site-tour-home-page" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
+{% endblock %}
+
+{% block navbar %}<br/>{% endblock %}
+
+{% block content %}
+<div id="content-main">
+	<div class="row">
+		<!-- Project card -->
+		<div class="col-lg-6 col-md-6">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-xs-3">
+                            <span class="fa-stack fa-3x">
+                                <i class="fa fa-square-o fa-stack-2x"></i>
+                                <i class="fa fa-random fa-stack-1x"></i>
+                            </span>
+						</div>
+						<div class="col-xs-9 text-right">
+							<div class="huge">{{ num_project }}</div>
+							<div class="mid-huge">Project{% if num_project > 1 %}s{% endif %}</div>
+						</div>
+					</div>
+				</div>
+				<a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/">
+					<div class="panel-footer">
+						<span class="pull-left"><i class="fa fa-list-alt"></i>&nbsp;&nbsp;View All Projects</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+                <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/add/">
+					<div class="panel-footer">
+						<span class="pull-left"><i class="fa fa-plus-square"></i>&nbsp;&nbsp;Add New Project</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+			</div>
+		</div>
+        <!-- Task card -->
+        <div class="col-lg-6 col-md-6">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<div class="row">
+						<div class="col-xs-3">
+                            <span class="fa-stack fa-3x">
+                                <i class="fa fa-square-o fa-stack-2x"></i>
+                                <i class="fa fa-map-marker fa-stack-1x"></i>
+                            </span>
+						</div>
+						<div class="col-xs-9 text-right">
+							<div class="huge">{{ num_task }}</div>
+							<div class="mid-huge">Geocoding Task{% if num_project > 1 %}s{% endif %}</div>
+						</div>
+					</div>
+				</div>
+				<a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/">
+					<div class="panel-footer">
+						<span class="pull-left"><i class="fa fa-list-alt"></i>&nbsp;&nbsp;View All Tasks</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+                <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/">
+					<div class="panel-footer">
+						<span class="pull-left"><i class="fa fa-plus-square"></i>&nbsp;&nbsp;Add New Task</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+			</div>
+		</div>
+    </div>
+	
+	<!-- Online Geocoder Usage Card -->
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading" id="panel-geocoder-usage">
+					<i class="fa fa-map-marker fa-lg"></i> Online Geocoder Usage
+				</div>
+				<div class="panel-body">
+					<div class="table-responsive">
+						<table class="table" id="table-geocoder-usage">
+							<thead>
+								<tr>
+									<th>Geocoder</th>
+									{% for geocoder in geocoder_status %}
+										<th>{{geocoder.name}}</th>
+									{% endfor %}
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><strong>Allowence</strong></td>
+									{% for geocoder in geocoder_status %}
+										<td>{{geocoder.limit}}</td>
+									{% endfor %}
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Get Started Card -->
+	<div class="row">
+		<div class="col-lg-12">
+			<div class="col-lg-6">
+				<a id="start-new-project" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/add/" class="btn btn-success btn-lg btn-block"><span class="mid-huge">Start a New Project</span></a>
+			</div>
+			<div class="col-lg-6">
+				<a id="start-single-task" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project=4" class="btn btn-success btn-lg btn-block"><span class="mid-huge">Start a Single Geocoding Task</span></a>
+			</div>
+		</div>
+	</div>
+	
+	<br/>
+  
+    <div class="row">
+		<div class="col-lg-12">
+			<div class="panel panel-primary">
+				<div class="panel-heading" id="panel-instant-geocoding">
+					Instant Geocoding
+				</div>
+				<div class="panel-body">
+                    <div class="form-group input-group">
+                        <span class="input-group-addon">Address</span>
+                        <input id="input-address" type="text" class="form-control" placeholder="Enter an address (zip code is optional). Example: 1705 17th St, Denver, CO, 80202">
+                        <span class="input-group-btn"><a id="btn-geocode" class="btn btn-warning" href="#map" title="Geocode"><i class="fa fa-map-marker fa-lg"></i></a></span>
+                    </div>
+                    <div class="form-group input-group has-success">
+                        <span class="input-group-addon">Location</span>
+                        <input id="input-point-coord" type="text" class="form-control">
+                        <span class="input-group-btn"><button id="copy-coordinates" class="btn btn-success" data-clipboard-target="#input-point-coord" title="Copy to clipboard"><i class="fa fa-clipboard"></i></button></span>
+                    </div>
+                    <input id="url-geocode" type="hidden" value="{% setting 'ROOT_APP_URL' %}/instant_geocoding/"></input>
+                    <div id="map"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block bottomjs %}
+<!-- JQuery Cookie-->
+<script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+<!-- Leaflet JS -->
+<script src="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.js"></script>
+<!-- Clipboard JS -->
+<script src="{% static 'clipboard/clipboard.min.js' %}"></script>
+<!-- Enjoyhint JS -->
+<script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
+<script src="{% static 'sitetour/sitetour.js' %}"></script>
+<!-- Page JS -->
+<script>
+// Cookie for first time visitor
+$(document).ready(function(){
+	// check if cookei exists
+	var visited = $.cookie('visited');
+	if (visited == null){
+		var visited = $.cookie('visited','yes',{expires:365,path:'/'});
+		var new_enjoyhint_script_steps = enjoyhint_script_steps_first_time_visitor_home_page.concat(enjoyhint_script_steps_home_page);
+		var new_enjoyhint_instance = new EnjoyHint({});
+		new_enjoyhint_instance.set(new_enjoyhint_script_steps);
+		new_enjoyhint_instance.run();
+	}
+	
+	// Map JS
+	var map = L.map('map',{maxZoom:16}).setView([39.7645187,-104.9951944], 11);
+	var Esri_WorldGrayCanvas = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+		attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+		maxZoom: 16
+	}).addTo(map);
+	var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+		attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+	}).addTo(map);
+	var marker = L.marker([39.7645187,-104.9951944]).addTo(map);
+	marker.bindPopup("Denver, Colorado, USA").openPopup();
+
+	// Clipboard
+	new Clipboard('#copy-coordinates');    
+
+	// Page JS
+	function geocode(){
+		var csrftoken = $.cookie('csrftoken');
+		var url=$("#url-geocode").val();
+		var address = $("#input-address").val();
+		$.ajax({
+			url : url,
+			type : "POST",
+			data : {
+				csrfmiddlewaretoken: csrftoken,
+				address: address,
+			},
+			success : function(json) {
+				var point = jQuery.parseJSON(json.point);
+				if (point == "Failed!"){
+					$("#input-point-coord").val("No matching result found. Geocoding failed!");
+				}
+				else{ 
+					var geocoder = json.geocoder;
+					var confidence = json.confidence;
+					$("#input-point-coord").val(point[0]+","+point[1]);
+					var marker = L.marker(point).addTo(map);
+					marker.bindPopup(address+"<br>("+point[0]+","+point[1]+")<br>Geocoder: "+geocoder+"<br>Confidence Level: "+confidence+' <a title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><strong><i class="fa fa-question-circle"></i></strong></a>').openPopup();
+					map.setView(point,16)
+				}
+			},
+			error : function(xhr,errmsg,err) {
+				console.log(xhr.status + ": " + xhr.responseText);
+			}
+		});
+	}
+	$("#btn-geocode").click(function(){geocode();});
+});
+</script>
+{% endblock %}
