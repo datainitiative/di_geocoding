@@ -61,7 +61,7 @@
 										<td>{{t.initiate_date}}</td>
 										<td>
 											{% if t.has_result %}
-												<a href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{t.id}}">Results</a>
+												<a href="{% setting 'ROOT_APP_URL' %}/geocoding/results?task={{t.id}}">View Results</a>
 											{% else %}
 												<a href="{% setting 'ROOT_APP_URL' %}/geocoding/setup?task={{t.id}}">Go Geocoding</a>
 											{% endif %}
