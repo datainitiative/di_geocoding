@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate,login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.models import Group
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -153,21 +154,41 @@ def update_all_geocoders_usage():
                 geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
     return geocoder_status
 
+@login_required
+def switch_homepage_view(request):
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Admin View").exists():
+        grp = Group.objects.get(name="Admin View")
+        user.groups.remove(grp)
+    else:
+        grp = Group.objects.get(name="Admin View")
+        user.groups.add(grp)        
+    redirect_url = "%s/home" % ROOT_APP_URL
+    return HttpResponseRedirect(redirect_url)    
+
+
 # Home page
 @login_required
-@render_to("geocodingapp/home.html")
+@render_to("geocodingapp/home2.html")
 def home(request):
     projects = Project.objects.all()
     num_project = len(projects)
     tasks = Task.objects.all()
     num_task = len(tasks)
     geocoder_status = update_all_geocoders_usage()
-       
-    return {
-        "num_project": num_project,
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Admin View").exists():
+        hp_template = "geocodingapp/home.html"
+    else:      
+        hp_template = "geocodingapp/home2.html"
+        
+    return render_to_response(
+        hp_template,
+        {"num_project": num_project,
         "num_task": num_task,
-        "geocoder_status": geocoder_status,
-    }
+        "geocoder_status": geocoder_status,},
+        context_instance=RequestContext(request)
+        )
 
 # Dashboard Page
 @login_required

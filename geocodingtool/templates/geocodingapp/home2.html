@@ -7,8 +7,10 @@
 <!-- Enjoyhint style -->
 <link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
 <style>
+#content {margin-top: 20px!important;}
 #map { height: 600px; }
 .form-group input[type=text]{height: 34px!important;}
+.well-usage {background-color:#C3C3C3!important;}
 </style>
 {% endblock %}
 
@@ -26,87 +28,51 @@
 	<li style="padding-top:10px"><button id="btn-site-tour-home-page" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
 {% endblock %}
 
+{% block breadcrumbs %}
+	<ul class='breadcrumb'>
+	<li>{% trans 'Home' %}</li>
+	{% if user|has_group:"Superuser" %}
+	<li><a href="{% url 'admin:index' %}">{% trans 'Superuser Admin Home' %}</a></li>
+	<!--
+	<li><a href="{% url 'admin:index' %}geocodingapp/project/">Project List</a></li>
+	-->
+	{% endif %}
+	{% if user|has_group:"Staff Admin" %}
+	<li><a href="{% url 'admin:index' %}geocodingapp/">App Admin</a></li>
+	<li><a href="{% url 'admin:index' %}geocodingapp/task/">Task List</a></li>
+	{% endif %}
+	</ul>
+{% endblock %}
+
 {% block navbar %}<br/>{% endblock %}
 
 {% block content %}
 <div id="content-main">
 	<div class="row">
-		<!-- Project card -->
-		<div class="col-lg-6 col-md-6">
-			<div class="panel panel-primary">
-				<div class="panel-heading">
-					<div class="row">
-						<div class="col-xs-3">
-                            <span class="fa-stack fa-3x">
-                                <i class="fa fa-square-o fa-stack-2x"></i>
-                                <i class="fa fa-random fa-stack-1x"></i>
-                            </span>
-						</div>
-						<div class="col-xs-9 text-right">
-							<div class="huge">{{ num_project }}</div>
-							<div class="mid-huge">Project{% if num_project > 1 %}s{% endif %}</div>
-						</div>
-					</div>
-				</div>
-				<a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/">
-					<div class="panel-footer">
-						<span class="pull-left"><i class="fa fa-list-alt"></i>&nbsp;&nbsp;View All Projects</span>
-						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-						<div class="clearfix"></div>
-					</div>
-				</a>
-                <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/add/">
-					<div class="panel-footer">
-						<span class="pull-left"><i class="fa fa-plus-square"></i>&nbsp;&nbsp;Add New Project</span>
-						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-						<div class="clearfix"></div>
-					</div>
-				</a>
+		<!-- Home Card -->
+		<div class="col-lg-4 col-md-4 col-sm-12">
+			<div class="well well-lg text-center">
+				<h2>Welcome</h2>
+				<p><br/></p>
+				<p><h3><small>You have <strong>{{ num_task }}</strong> <a href="{% setting 'ROOT_APP_URL' %}/dashboard/#panel-tasks">Geocoding Tasks</a></small></h3></p>
+				<hr>
+				<p><br/><i class="fa fa-map-marker fa-4x"></i><br/></p>
+				<p>Like to locate a set of addresses <br/>and create a map?</p>
+				<p><br/><a class="btn btn-info btn-lg" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/">Start a Geocoding Task</a></p>
 			</div>
 		</div>
-        <!-- Task card -->
-        <div class="col-lg-6 col-md-6">
-			<div class="panel panel-primary">
-				<div class="panel-heading">
-					<div class="row">
-						<div class="col-xs-3">
-                            <span class="fa-stack fa-3x">
-                                <i class="fa fa-square-o fa-stack-2x"></i>
-                                <i class="fa fa-map-marker fa-stack-1x"></i>
-                            </span>
-						</div>
-						<div class="col-xs-9 text-right">
-							<div class="huge">{{ num_task }}</div>
-							<div class="mid-huge">Geocoding Task{% if num_project > 1 %}s{% endif %}</div>
-						</div>
-					</div>
-				</div>
-				<a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/">
-					<div class="panel-footer">
-						<span class="pull-left"><i class="fa fa-list-alt"></i>&nbsp;&nbsp;View All Tasks</span>
-						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-						<div class="clearfix"></div>
-					</div>
-				</a>
-                <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/">
-					<div class="panel-footer">
-						<span class="pull-left"><i class="fa fa-plus-square"></i>&nbsp;&nbsp;Add New Task</span>
-						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-						<div class="clearfix"></div>
-					</div>
-				</a>
-			</div>
-		</div>
-    </div>
-	
-	<!-- Online Geocoder Usage Card -->
-	<div class="row">
-		<div class="col-lg-12">
-			<div class="panel panel-yellow">
-				<div class="panel-heading" id="panel-geocoder-usage">
-					<i class="fa fa-map-marker fa-lg"></i> Online Geocoder Usage
-				</div>
-				<div class="panel-body">
+        <!-- Geocoding Intro Card -->
+        <div class="col-lg-8 col-md-8 col-sm-12">
+			<div class="well well-lg text-center">
+				<h2>Geocoding</h2>
+				<p><h3><small>A spatial description of a location. To find geographic coordinates from addresses.</small></h3></p>
+				<p><i class="fa fa-location-arrow fa-5x"></i></p>
+				<p><br/><a class="btn btn-outline btn-info btn-lg" href="#panel-instant">Locate an Address on the Map</a></p>
+				<p><br/></p>
+				<p>The geocoding tool facilitates spatial analysis to locate addresses using a series of online geocoding APIs.</p>
+				<p>Online geocoding APIs are free for non-commercial use but have usage limits.</p>
+				<p><a data-toggle="collapse" href="#balance-panel" id="balanceswitch" class="btn btn-default btn-block"><i class="fa fa-chevron-circle-down"></i> Check Geocoder Usage Balance</a></p>
+				<div id="balance-panel" class="well well-usage collapse">
 					<div class="table-responsive">
 						<table class="table" id="table-geocoder-usage">
 							<thead>
@@ -130,25 +96,11 @@
 				</div>
 			</div>
 		</div>
-	</div>
-	
-	<!-- Get Started Card -->
-	<div class="row">
-		<div class="col-lg-12">
-			<div class="col-lg-6">
-				<a id="start-new-project" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/add/" class="btn btn-success btn-lg btn-block"><span class="mid-huge">Start a New Project</span></a>
-			</div>
-			<div class="col-lg-6">
-				<a id="start-single-task" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project=4" class="btn btn-success btn-lg btn-block"><span class="mid-huge">Start a Single Geocoding Task</span></a>
-			</div>
-		</div>
-	</div>
-	
-	<br/>
+    </div>
   
     <div class="row">
 		<div class="col-lg-12">
-			<div class="panel panel-primary">
+			<div class="panel panel-primary" id="panel-instant">
 				<div class="panel-heading" id="panel-instant-geocoding">
 					Instant Geocoding
 				</div>
@@ -183,6 +135,16 @@
 <script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
 <script src="{% static 'sitetour/sitetour.js' %}"></script>
 <!-- Page JS -->
+<script>
+$('#balanceswitch').html(function(){
+        return ($('#balance-panel').is(':visible') ? '<i class="fa fa-chevron-circle-up"></i> Hide' : '<i class="fa fa-chevron-circle-down"></i> Check') + ' Geocoder Usage Balance';
+});
+$('#balanceswitch').click(function(){console.log($('#balance-panel').is(':visible'));
+    $(this).html(function(){
+        return ($('#balance-panel').is(':visible') ? '<i class="fa fa-chevron-circle-down"></i> Check' : '<i class="fa fa-chevron-circle-up"></i> Hide') + ' Geocoder Usage Balance';
+    });
+});
+</script>
 <script>
 // Cookie for first time visitor
 $(document).ready(function(){
