@@ -10,7 +10,8 @@
 #content {margin-top: 20px!important;}
 #map { height: 600px; }
 .form-group input[type=text]{height: 34px!important;}
-.well-usage {background-color:#C3C3C3!important;}
+.well-usage {background-color:#d9edf7!important; margin-bottom:0px!important;}
+#table-geocoder-usage{margin-bottom: 0px!important;}
 </style>
 {% endblock %}
 
@@ -53,12 +54,15 @@
 		<div class="col-lg-4 col-md-4 col-sm-12">
 			<div class="well well-lg text-center">
 				<h2>Welcome</h2>
-				<p><br/></p>
-				<p><h3><small>You have <strong>{{ num_task }}</strong> <a href="{% setting 'ROOT_APP_URL' %}/dashboard/#panel-tasks">Geocoding Tasks</a></small></h3></p>
+				<p>{% if not num_user_pending_tasks %}<br/>{% endif %}</p>
+				<p><h3><small>You have previously completed <br/><strong>{{ num_user_complete_tasks }}</strong> <a href="{% setting 'ROOT_APP_URL' %}/dashboard/#panel-tasks">Geocoding Tasks</a></small></h3></p>
+				{% if num_user_pending_tasks %}
+					<h4><small>You have <strong>{{num_user_pending_tasks}}</strong> <span class="text-warning">pending tasks</span></small></h4>
+				{% endif %}
 				<hr>
 				<p><br/><i class="fa fa-map-marker fa-4x"></i><br/></p>
 				<p>Like to locate a set of addresses <br/>and create a map?</p>
-				<p><br/><a class="btn btn-info btn-lg" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/">Start a Geocoding Task</a></p>
+				<p><br/><a class="btn btn-info btn-lg" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{single_geocodingtask_id}}">Start a Geocoding Task</a></p>
 			</div>
 		</div>
         <!-- Geocoding Intro Card -->

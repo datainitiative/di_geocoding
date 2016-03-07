@@ -85,58 +85,68 @@
         <div class="col-lg-12">
             <div class="panel panel-default">
                 <div id="panel-table" class="panel-heading">
-                    Geocoding Results
+                    <a data-toggle="collapse" href="#geocodingresults" id="geocodingresultswitch">Geocoding Result Table (Click to Show)</a>
                     <a id="btn-download-csv" class="btn btn-warning pull-right" style="margin-top:-7px;" title="Download CSV" href="{% setting 'ROOT_APP_URL' %}/geocoding/download_results/{{task_id}}/">&nbsp;&nbsp;<i class="fa fa-download fa-lg"></i>&nbsp;&nbsp;</a>
                 </div>
-                <div class="panel-body">
-                    <div class="dataTable_wrapper">
-                        <table class="table table-striped table-bordered table-hover" id="dataTables-example">
-                            <thead>
-                                <tr>
-									<th></th>
-                                    <th>Label</th>
-                                    <th>Address</th>
-                                    <th>Locatoin</th>
-                                    <th>Geocoder</th>
-                                    <th id="tbheader-confidence">Confidence Level <span title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><i class="fa fa-question-circle"></i></span></th>
-                                    <th>Accuracy</th>
-                                    <th>Final Source</th>
-									<th>Neighborhood Summary</th>
-                                    <th>Edit</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for r in task_results %}
-                                    <tr class="gradeA" role="row">
-										<td><a href="#panel-map" title="Zoom to on Map" class="record-zoom-to-map" id="{{r.location.lat}},{{r.location.lng}},{{r.name}}"><i class="fa fa-search-plus fa-lg"></i></a></td>
-                                        <td>{{r.name}}</td>
-                                        <td>{{r.address}}</td>
-                                        <td>
-                                            {% if r.location %}
-                                                {{r.location.lat}},{{r.location.lng}}
-                                            {% else %}
-                                                None
-                                            {% endif %}
-                                        </td>
-                                        <td>{{r.geocoder}}</td>
-                                        {% if r.confidence_level.score > 7 %}
-                                            <td>{{r.confidence_level.score}}</td>
-                                        {% else %}
-                                            <td><span class="text-danger"><strong>{{r.confidence_level.score}}</strong></span></td>
-                                        {% endif %}
-                                        <td>{{r.accuracy}}</td>
-                                        <td>{{r.final_source.name}}</td>
-										<td>
-											{% if r.location %}
-												<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a></td>
+				<div id="geocodingresults" class="panel-collapse collapse">
+					<div class="panel-body">
+						<div class="dataTable_wrapper">
+							<table class="table table-striped table-bordered table-hover" id="dataTables-example">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Label</th>
+										<th>Address</th>
+										<th>Locatoin</th>
+										<th>Geocoder</th>
+										<th id="tbheader-confidence">Confidence Level <span title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><i class="fa fa-question-circle"></i></span></th>
+										{% if user|has_group:"Staff Admin" %}
+											<th>Accuracy</th>
+											<th>Final Source</th>
+										{% endif %}
+										<th>Neighborhood Summary</th>
+										{% if user|has_group:"Staff Admin" %}
+											<th>Edit</th>
+										{% endif %}
+									</tr>
+								</thead>
+								<tbody>
+									{% for r in task_results %}
+										<tr class="gradeA" role="row">
+											<td><a href="#panel-map" title="Zoom to on Map" class="record-zoom-to-map" id="{{r.location.lat}},{{r.location.lng}},{{r.name}}"><i class="fa fa-search-plus fa-lg"></i></a></td>
+											<td>{{r.name}}</td>
+											<td>{{r.address}}</td>
+											<td>
+												{% if r.location %}
+													{{r.location.lat}},{{r.location.lng}}
+												{% else %}
+													None
+												{% endif %}
+											</td>
+											<td>{{r.geocoder}}</td>
+											{% if r.confidence_level.score > 7 %}
+												<td>{{r.confidence_level.score}}</td>
+											{% else %}
+												<td><span class="text-danger"><strong>{{r.confidence_level.score}}</strong></span></td>
 											{% endif %}
-                                        <td><a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" class="record-edit" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+											{% if user|has_group:"Staff Admin" %}
+												<td>{{r.accuracy}}</td>
+												<td>{{r.final_source.name}}</td>
+											{% endif %}
+											<td>
+												{% if r.location %}
+													<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a></td>
+												{% endif %}
+											{% if user|has_group:"Staff Admin" %}
+												<td><a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" class="record-edit" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
+											{% endif %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
             </div>
         </div>
     </div>
@@ -145,7 +155,7 @@
 		<div class="col-lg-12">
 			<div id="panel-map" class="panel panel-primary">
 				<div id="panel-map-header" class="panel-heading">
-                    <a data-toggle="collapse" href="#mapview" class="panel-heading-link" id="mapviewswitch">View on the Map (click to hide)</a>
+                    <a data-toggle="collapse" href="#mapview" class="panel-heading-link" id="mapviewswitch">View on the Map (click to Hide)</a>
 				</div>
                 <div id="mapview" class="panel-collapse collapse in">
                     <div class="panel-body">
@@ -237,9 +247,14 @@ $(document).ready(function() {
 		table.search('').draw();
 	});
 });
+$('#geocodingresultswitch').click(function(){
+    $(this).html(function(){
+        return 'Geocoding Result Table (Click to ' + ($('#geocodingresults').is(':visible') ? 'Show)' : 'Hide)');
+    });
+});
 $('#mapviewswitch').click(function(){
     $(this).html(function(){
-        return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'show)' : 'hide)');
+        return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'Show)' : 'Hide)');
     });
 });
 </script>

@@ -26,6 +26,7 @@ from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
 from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
 from geocodingtool.settings import CF_GEOTABLE
+from geocodingtool.settings import SINGLE_GEOCODINGTASK_ID
 from geocodingapp.models import *
 from geocodingapp.forms import *
 
@@ -177,6 +178,12 @@ def home(request):
     num_task = len(tasks)
     geocoder_status = update_all_geocoders_usage()
     user = User.objects.get(username=request.user)
+    user_tasks = Task.objects.filter(owner=user)
+    num_user_task = len(user_tasks)
+    user_complete_tasks = Task.objects.filter(owner=user).filter(has_result=True)
+    num_user_complete_tasks = len(user_complete_tasks)
+    user_pending_tasks = Task.objects.filter(owner=user).filter(has_result=False)
+    num_user_pending_tasks = len(user_pending_tasks)
     if user.groups.filter(name="Admin View").exists():
         hp_template = "geocodingapp/home.html"
     else:      
@@ -186,7 +193,11 @@ def home(request):
         hp_template,
         {"num_project": num_project,
         "num_task": num_task,
-        "geocoder_status": geocoder_status,},
+        "num_user_task": num_user_task,
+        "num_user_complete_tasks": num_user_complete_tasks,
+        "num_user_pending_tasks": num_user_pending_tasks,
+        "geocoder_status": geocoder_status,
+        "single_geocodingtask_id": SINGLE_GEOCODINGTASK_ID},
         context_instance=RequestContext(request)
         )
 
