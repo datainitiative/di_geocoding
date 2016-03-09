@@ -26,7 +26,7 @@
 {% endblock %}
 
 {% block site-tour %}
-	<li style="padding-top:10px"><button id="btn-site-tour-home-page" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
+	<li style="padding-top:10px"><button id="btn-site-tour-home-page-2" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
 {% endblock %}
 
 {% block breadcrumbs %}
@@ -52,7 +52,7 @@
 	<div class="row">
 		<!-- Home Card -->
 		<div class="col-lg-4 col-md-4 col-sm-12">
-			<div class="well well-lg text-center">
+			<div id="panel-welcome" class="well well-lg text-center">
 				<h2>Welcome</h2>
 				<p>{% if not num_user_pending_tasks %}<br/>{% endif %}</p>
 				<p><h3><small>You have previously completed <br/><strong>{{ num_user_complete_tasks }}</strong> <a href="{% setting 'ROOT_APP_URL' %}/dashboard/#panel-tasks">Geocoding Tasks</a></small></h3></p>
@@ -62,7 +62,7 @@
 				<hr>
 				<p><br/><i class="fa fa-map-marker fa-4x"></i><br/></p>
 				<p>Like to locate a set of addresses <br/>and create a map?</p>
-				<p><br/><a class="btn btn-info btn-lg" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{single_geocodingtask_id}}">Start a Geocoding Task</a></p>
+				<p><br/><a id="start-single-task" class="btn btn-info btn-lg" href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/add/?project={{single_geocodingtask_id}}">Start a Geocoding Task</a></p>
 			</div>
 		</div>
         <!-- Geocoding Intro Card -->
@@ -71,7 +71,7 @@
 				<h2>Geocoding</h2>
 				<p><h3><small>A spatial description of a location. To find geographic coordinates from addresses.</small></h3></p>
 				<p><i class="fa fa-location-arrow fa-5x"></i></p>
-				<p><br/><a class="btn btn-outline btn-info btn-lg" href="#panel-instant">Locate an Address on the Map</a></p>
+				<p><br/><a id="start-instant-geocoding" class="btn btn-outline btn-info btn-lg" href="#panel-instant">Locate an Address on the Map</a></p>
 				<p><br/></p>
 				<p>The geocoding tool facilitates spatial analysis to locate addresses using a series of online geocoding APIs.</p>
 				<p>Online geocoding APIs are free for non-commercial use but have usage limits.</p>
@@ -153,9 +153,9 @@ $('#balanceswitch').click(function(){console.log($('#balance-panel').is(':visibl
 // Cookie for first time visitor
 $(document).ready(function(){
 	// check if cookei exists
-	var visited = $.cookie('visited');
+	var visited = $.cookie('visited-home-page-2');
 	if (visited == null){
-		var visited = $.cookie('visited','yes',{expires:365,path:'/'});
+		var visited = $.cookie('visited-home-page-2','yes',{expires:365,path:'/'});
 		var new_enjoyhint_script_steps = enjoyhint_script_steps_first_time_visitor_home_page.concat(enjoyhint_script_steps_home_page);
 		var new_enjoyhint_instance = new EnjoyHint({});
 		new_enjoyhint_instance.set(new_enjoyhint_script_steps);

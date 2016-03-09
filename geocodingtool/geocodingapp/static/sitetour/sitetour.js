@@ -7,7 +7,7 @@ var enjoyhint_script_steps_first_time_visitor_home_page = [{
 
 var enjoyhint_script_steps_home_page = [
 	{
-		"next #start-single-task": "Click here to create a single geocoding task for batch geocoding addresses in a spreadsheet you upload.",
+		"next #start-single-task": "Click here to create a single geocoding task for batch geocoding addresses from a spreadsheet you upload.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 		"nextButton" : {className: "myNext2Line", text: "Next"},
 	},
@@ -55,10 +55,72 @@ var enjoyhint_script_steps_home_page = [
 	}
 ];
 
-// Home Page Button Click
+// Home Page Admin View Button Click
 $("#btn-site-tour-home-page").click(function(){
 	var enjoyhint_instance = new EnjoyHint({});
 	enjoyhint_instance.set(enjoyhint_script_steps_home_page);
+	enjoyhint_instance.run();
+});
+
+var enjoyhint_script_steps_home_page_2 = [
+	{
+		"next #panel-welcome": "The summary of your geocoding tasks can be found here in the Welcome Panel.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
+	},
+	{
+		"next #start-single-task": "Click here to create a geocoding task for geocoding addresses from a spreadsheet you upload.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
+	},
+	{
+		"next #start-instant-geocoding": "Click here to loate an address on the map.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #panel-instant-geocoding": "Instant Geocoding allows you to find the location of an address on the map.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #input-address": "Enter an address here, including street address, city, state, and zip code. Zip code is optional, but is requried if city and state are not specified.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
+	},
+	{
+		"click #btn-geocode": "Press 'Enter' or click this button to start geocoding.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #map": "A marker will be dropped on the map at the location of the address.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #input-point-coord": "Here is the latitude-longitude coordinates of the address location.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #copy-coordinates": "Click here to copy coordinates to clipboard.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #balanceswitch": "Some of the online geocoders have limits on API queris. Click here to check current balance.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #balance-panel": "Balance for the usage of each geocoder is shown here.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #btn-site-tour-home-page-2": "You can always come back to this tutorial by clicking the question mark here.",
+		"nextButton" : {className: "myNext", text: "Got it!"},
+		"showSkip": false,
+	}
+];
+
+// Home Page User View Button Click
+$("#btn-site-tour-home-page-2").click(function(){
+	var enjoyhint_instance = new EnjoyHint({});
+	enjoyhint_instance.set(enjoyhint_script_steps_home_page_2);
 	enjoyhint_instance.run();
 });
 
@@ -259,7 +321,28 @@ $("#btn-site-tour-setup-geocoding").click(function(){
 // Geocoding Result
 var enjoyhint_script_steps_geocoding_result = [
 	{
-		"next #panel-table": "Geocoding results are shown here.",
+		"next #btn-download-csv": "You can download geocoding results as a CSV file from here.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #mapview": "The address locations are displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+		"nextButton" : {className: "myNext2Line", text: "Next"},
+	},
+	{
+		"next .leaflet-control-layers": "Use layer control to switch between Cluster Map visualization and Heat Map visualization.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #div-size-slider": "User this slider to change cluster size. Map points will become more clustered as the cluster size increase.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"next #div-size-slider": "When Heat Map layer is selected, use this slider to change radius size.",
+		"skipButton" : {className: "mySkip", text: "Exit"},
+	},
+	{
+		"click #geocodingresultswitch": "Click to show Geocoding result table.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
@@ -284,24 +367,7 @@ var enjoyhint_script_steps_geocoding_result = [
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
-		"next #panel-map-header": "The locations are displayed on the map. Locations are clustered with numbers shown on the marker. By clicking the cluster marker or zooming-in closer, the points will spread out.",
-		"skipButton" : {className: "mySkip", text: "Exit"},
-		"nextButton" : {className: "myNext2Line", text: "Next"},
-	},
-	{
-		"next .leaflet-control-layers": "Use layer control to switch between Cluster Map visualization and Heat Map visualization.",
-		"skipButton" : {className: "mySkip", text: "Exit"},
-	},
-	{
-		"next #div-size-slider": "User this slider to change cluster size. Map points will become more clustered as the cluster size increase.",
-		"skipButton" : {className: "mySkip", text: "Exit"},
-	},
-	{
-		"next #div-size-slider": "When Heat Map layer is selected, use this slider to change radius size.",
-		"skipButton" : {className: "mySkip", text: "Exit"},
-	},
-	{
-		"next #btn-download-csv": "Click this button to download geocoding results as a CSV file.",
+		"click #geocodingresultswitch": "Click to hide Geocoding result table.",
 		"skipButton" : {className: "mySkip", text: "Exit"},
 	},
 	{
