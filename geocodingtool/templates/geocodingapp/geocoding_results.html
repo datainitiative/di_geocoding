@@ -135,8 +135,9 @@
 											{% endif %}
 											<td>
 												{% if r.location %}
-													<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a></td>
+													<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a>
 												{% endif %}
+											</td>
 											{% if user|has_group:"Staff Admin" %}
 												<td><a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" class="record-edit" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
 											{% endif %}
@@ -220,12 +221,20 @@
 <script src="{% static 'sitetour/sitetour.js' %}"></script>
 <!-- page JS -->
 <script>
-$("#div-radius-slider").hide();
 $(document).ready(function() {
-    var table = $('#dataTables-example').DataTable({
-            responsive: true,
-            "order":[[5,"asc"]],
-    });
+	// Page JS
+	$("#div-radius-slider").hide();
+	
+	$('#geocodingresultswitch').click(function(){
+		$(this).html(function(){
+			return 'Geocoding Result Table (Click to ' + ($('#geocodingresults').is(':visible') ? 'Show)' : 'Hide)');
+		});
+	});
+	$('#mapviewswitch').click(function(){
+		$(this).html(function(){
+			return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'Show)' : 'Hide)');
+		});
+	});
     
     // check if cookie exists
     var visited = $.cookie('visited-geocoding-result');
@@ -236,6 +245,12 @@ $(document).ready(function() {
         enjoyhint_instance.run();
     }
 	
+	// Data Table
+	var table = $('#dataTables-example').DataTable({
+            responsive: true,
+            "order":[[5,"asc"]],
+    });
+	
 	// add a question mark next to search box
 	$("#dataTables-example_filter > label > input").attr("placeholder","search text in results");
 	$("#dataTables-example_filter").append('<div id="search-box-wrapper" class="form-group input-group"></div>');
@@ -243,23 +258,10 @@ $(document).ready(function() {
 	$("#search-box-wrapper").width("100%").append('<span class="input-group-btn"><button id="clear-search" class="btn btn-default btn-sm" title="Clear Search"><i class="fa fa-close"></i></button></span>');
 	$("#dataTables-example_filter > label").remove();
 	$("#clear-search").click(function(){
-		console.log(table);
 		table.search('').draw();
 	});
-});
-$('#geocodingresultswitch').click(function(){
-    $(this).html(function(){
-        return 'Geocoding Result Table (Click to ' + ($('#geocodingresults').is(':visible') ? 'Show)' : 'Hide)');
-    });
-});
-$('#mapviewswitch').click(function(){
-    $(this).html(function(){
-        return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'Show)' : 'Hide)');
-    });
-});
-</script>
-<!-- Map JS -->
-<script>
+	
+	// Map JS
     var map = L.map('map',{maxZoom:19}).setView([39.7645187,-104.9951944], 11);
     /*
 	var Esri_WorldGrayCanvas = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
@@ -348,8 +350,6 @@ $('#mapviewswitch').click(function(){
         }
     });
     var updateRadiusSize = function(){
-        console.log("updating radius size");
-		console.log(heatMap.options.radius);
 		heatMap.setOptions({radius:parseInt(this.value),max:0.05,blur:10});
 		heatMap.redraw();
     };
@@ -403,5 +403,7 @@ $('#mapviewswitch').click(function(){
 	}
 	
 	map.on('baselayerchange',changeBaseLayer);
+});
+
 </script>
 {% endblock %}
