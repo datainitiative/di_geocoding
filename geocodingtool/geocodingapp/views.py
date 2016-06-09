@@ -942,6 +942,28 @@ def geocoding_result(request):
     task_results = GeocodingResult.objects.filter(task=task)
     points = []
     points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@login_required
+@render_to("geocodingapp/geocoding_results_admin.html")
+def geocoding_result_admin(request):
+    task_id = int(request.GET["task"])
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
     for result in task_results:
         if result.location:
             points.append([result.location.lat,result.location.lng])
