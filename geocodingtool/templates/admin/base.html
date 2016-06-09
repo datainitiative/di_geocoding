@@ -14,7 +14,60 @@
       body {
         padding-top: 60px;
         padding-bottom: 40px;
+		background-color: #F1F1F1!important;
+		color: 333;
       }
+	  hr{
+		border-top:1px solid #D6D6D6!important;
+	  }
+	  .navbar-inner{
+		background-color: #FFF;
+	  }
+	  .navbar-upper{
+		background-color: #0572AA;
+	  }
+	  #site-name a{
+		color: #34B8F4;
+	  }
+	  #site-name a:hover{
+		color: #75D3FF;
+		text-decoration: none;
+	  }
+	  .navbar-lower{
+		background-color: #FFF;
+	  }
+	  .navbar-right{
+		margin-top:19px;
+	  }
+	  .navbar-nav>li>a{
+		color: #FFF!important;
+	  }
+	  .dropdown-toggle{
+		background-color: #0572AA!important;
+	  }
+	  a.dropdown-toggle:hover{
+		color: #75D3FF!important;
+	  }
+	  .dropdown-menu>li>a:hover{
+		color: #FFF;
+		background-color: #0081C2!important;
+	  }
+	  #breadcrumbs{
+		height: 40px;
+		background-color: #FFF;
+		font-size: 16px;
+	  }
+	  .breadcrumb{
+		margin-top: 0px!important;
+		margin-bottom: 0px!important;
+		background-color: #FFF;
+	  }
+	  .navbar-brand{
+		margin-top: 10px;
+	  }
+	  #content{
+		padding-top:40px!important;
+	  }
       .enjoyhint_skip_btn {
         left: auto!important;
         top: auto!important;
@@ -71,7 +124,7 @@
     {% if not is_popup %}
     <!-- Header -->
     <div class="navbar navbar-default navbar-fixed-top" id="topnavbar">
-        <div class="navbar-inner">
+        <div class="navbar-inner navbar-upper">
             <div class="container">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#header-navbar-collapse">
@@ -88,6 +141,7 @@
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">{% trans 'Welcome,' %} <strong>{% filter force_escape %}{% firstof user.get_short_name user.get_username user.first_name user.username %}{% endfilter %}</strong> <span class="caret"></span></a>
                             <ul class="dropdown-menu">
 								<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+								{% block homepageswitch %}{% endblock %}
                                 <li><a href="{% setting 'ROOT_APP_URL' %}/user/profile"><i class="fa fa-user"></i> {% trans 'User Profile' %}</a></li>
 								<!--
                                 {% if user.has_usable_password %}                              
@@ -96,6 +150,8 @@
 								-->
 								{% if user|has_group:"Superuser" %}
 									<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/"><i class="fa fa-gear"></i> Administration</a></li>
+								{% elif user|has_group:"Staff Admin" %}
+									<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/"><i class="fa fa-gear"></i> Administration</a></li>
 								{% endif %}
                                 <!--
 								{% if user|has_group:"Steering Committee Staff" %}
@@ -156,15 +212,16 @@
                 </div><!--/.nav-collapse -->
             </div>
         </div>
+		<div class="navbar-inner navbar-lower">
+			<div class="container" id="breadcrumbs">
+				<div class="col-sm-12">
+					{% block breadcrumbs %}
+					{% endblock %}
+				</div>
+			</div>
+		</div>
     </div>
     <!-- END Header -->
-    <div class="row" id="breadcrumbs">
-        <div class="col-sm-12">
-            <br/>
-            {% block breadcrumbs %}
-            {% endblock %}
-        </div>
-    </div>
     {% endif %}
 
     <!-- Content -->

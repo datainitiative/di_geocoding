@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate,login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, SetPasswordForm
+from django.contrib.auth.models import Group
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
@@ -25,6 +26,7 @@ from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
 from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
 from geocodingtool.settings import CF_GEOTABLE
+from geocodingtool.settings import SINGLE_GEOCODINGTASK_ID
 from geocodingapp.models import *
 from geocodingapp.forms import *
 
@@ -153,21 +155,51 @@ def update_all_geocoders_usage():
                 geocoder_status.append({'name':geocoder.name,'limit':str(geocoder.limit),'limit_unit':geocoder.limit_unit})
     return geocoder_status
 
+@login_required
+def switch_homepage_view(request):
+    user = User.objects.get(username=request.user)
+    if user.groups.filter(name="Admin View").exists():
+        grp = Group.objects.get(name="Admin View")
+        user.groups.remove(grp)
+    else:
+        grp = Group.objects.get(name="Admin View")
+        user.groups.add(grp)        
+    redirect_url = "%s/home" % ROOT_APP_URL
+    return HttpResponseRedirect(redirect_url)    
+
+
 # Home page
 @login_required
-@render_to("geocodingapp/home.html")
+@render_to("geocodingapp/home2.html")
 def home(request):
     projects = Project.objects.all()
     num_project = len(projects)
     tasks = Task.objects.all()
     num_task = len(tasks)
     geocoder_status = update_all_geocoders_usage()
-       
-    return {
-        "num_project": num_project,
+    user = User.objects.get(username=request.user)
+    user_tasks = Task.objects.filter(owner=user)
+    num_user_task = len(user_tasks)
+    user_complete_tasks = Task.objects.filter(owner=user).filter(has_result=True)
+    num_user_complete_tasks = len(user_complete_tasks)
+    user_pending_tasks = Task.objects.filter(owner=user).filter(has_result=False)
+    num_user_pending_tasks = len(user_pending_tasks)
+    if user.groups.filter(name="Admin View").exists():
+        hp_template = "geocodingapp/home.html"
+    else:      
+        hp_template = "geocodingapp/home2.html"
+        
+    return render_to_response(
+        hp_template,
+        {"num_project": num_project,
         "num_task": num_task,
+        "num_user_task": num_user_task,
+        "num_user_complete_tasks": num_user_complete_tasks,
+        "num_user_pending_tasks": num_user_pending_tasks,
         "geocoder_status": geocoder_status,
-    }
+        "single_geocodingtask_id": SINGLE_GEOCODINGTASK_ID},
+        context_instance=RequestContext(request)
+        )
 
 # Dashboard Page
 @login_required

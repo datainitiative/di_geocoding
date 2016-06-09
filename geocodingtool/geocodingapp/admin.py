@@ -85,7 +85,7 @@ admin.site.register(Project,ProjectAdmin)
 
 class TaskAdmin(admin.ModelAdmin):
     fields = ['description','project','note','initiate_date','file','owner']
-    list_display = ['description','project','initiate_date','has_result','geocoding_result_link','owner']
+    list_display = ['id','description','project','initiate_date','has_result','geocoding_result_link','owner']
     list_filter = ['project','project__category','has_result','owner']
     readonly_fields = ['initiate_date','owner']
     search_fields = ('description','project__title')
@@ -114,6 +114,7 @@ admin.site.register(AddressInventory,AddressInventoryAdmin)
 class GeocodingResultAdmin(admin.ModelAdmin):
     fields = ['task','name','address','formatted_address','location','geocoder','confidence_level','accuracy','final_source']
     list_display = ['id','task','name','address','location','geocoder','confidence_level','accuracy','final_source']
+    list_filter = ['task__description','geocoder','confidence_level','accuracy','final_source']
 admin.site.register(GeocodingResult,GeocodingResultAdmin)
 
 class FormattedAddressAdmin(admin.ModelAdmin):

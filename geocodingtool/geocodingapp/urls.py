@@ -8,6 +8,7 @@ from django.contrib.auth.views import logout
 
 urlpatterns = patterns('geocodingapp.views',
 	# Home page URL
+	url(r'^home/switch_view/$','switch_homepage_view'),
 	url(r'^home/$','home'),
 
 	# Login,Logout,Register,User
