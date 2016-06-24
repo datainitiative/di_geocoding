@@ -3,7 +3,6 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.template import RequestContext
 from django.db import models
-from django.db.models.loading import get_model
 from django.contrib import messages
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.forms import AuthenticationForm
