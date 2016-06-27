@@ -207,3 +207,7 @@ MAPBOX_API_KEY = "MAPBOX_API_KEY"
 # MapQuest: 15000 transactions per month. No bounding box, thus no confidence level.
 # g = geocoder.mapquest('address',key=)
 MAPQUEST_API_KEY = "MAPQUEST_API_KEY"
+
+## Limit Max File Upload Size to 5MB = 5242880 bytes
+#MAX_UPLOAD_SIZE = 5242880
+MAX_UPLOAD_SIZE = 1048576 # 1MB

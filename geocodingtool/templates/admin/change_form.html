@@ -53,9 +53,10 @@
 {% endif %}
 {% if user|has_group:"Staff Admin" %}
 <li><a href="{% url 'admin:index' %}{{app_label}}/">{{app_label|capfirst}} Admin</a></li>
-{% endif %}
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/">Project</a></li>
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/">Task</a></li>
+{% endif %}
+<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/">Dashboard</a></li>
 <!--
 {% if user|has_group:"MHC Admin" %}
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/">Admin</a></li>
@@ -314,6 +315,13 @@
 			}
 		});
     </script>
+	{% if user|has_group:"CfD Test" %}
+		<script>
+			$(document).ready(function(){
+				$(".field-project").hide();
+			});
+		</script>
+	{% endif %}
 {% endif %}
 
 {% if opts.model_name == "task" and not add %}
@@ -335,5 +343,12 @@
 			}
         });
     </script>
+	{% if user|has_group:"CfD Test" %}
+		<script>
+			$(document).ready(function(){
+				$(".field-project").hide();
+			});
+		</script>
+	{% endif %}
 {% endif %}
 {% endblock %}

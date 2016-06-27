@@ -651,6 +651,11 @@ def instant_geocoding(request):
 @login_required
 @render_to("geocodingapp/geocoding_setup.html")
 def geocoding_setup(request):
+    exceed_limit = False
+#    # check if exceed limit
+#    user = User.objects.get(username=request.user)
+#    user_geocoding_limit = UserGeocodingLimit.objects.get(user=user).user_balance
+    
     if request.GET["task"]:
         task_id = int(request.GET["task"])
     # read task file
@@ -694,6 +699,7 @@ def geocoding_setup(request):
         preview_table_content = None
     
     return {
+            'exceed_limit': exceed_limit,
             'task_id': task_id,
             'preview_table_headers': preview_table_headers,
             'preview_table_content': preview_table_content
