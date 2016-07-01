@@ -161,7 +161,7 @@
 				<div class="panel-footer">
 					<div class="pull-right">
 						<strong><i class="fa fa-share-alt"></i> Share the Map</strong>
-						<div id="social-share-group" class="ssk-group" data-url="{% setting 'ROOT_APP_URL' %}/geocoding/share_results/{{task_id}}/" data-text="I have mapped my data with the Geocoding Tool! [host]{% setting 'ROOT_APP_URL' %}/geocoding/share_results/{{task_id}}/">
+						<div id="social-share-group" class="ssk-group" data-url="[protocol]//[host]{% setting 'ROOT_APP_URL' %}/geocoding/share_results/{{task_id}}/" data-text="I mapped my data with the Geocoding Tool!">
 							<a href="" class="ssk ssk-twitter"></a>
 							<a href="" class="ssk ssk-google-plus"></a>
 							<a href="" class="ssk ssk-facebook"></a>
@@ -205,8 +205,13 @@ $(document).ready(function() {
 	// Page JS
 	$("#div-radius-slider").hide();
 	var share_text = $("#social-share-group").attr("data-text");
-	share_text = share_text.replace('[host]',location.host);
+	share_text = share_text.replace('[protocol]',location.protocol).replace('[host]',location.host);
+	console.log(share_text);
 	$("#social-share-group").attr("data-text",share_text);
+	var share_url = $("#social-share-group").attr("data-url");
+	share_url = share_url.replace('[protocol]',location.protocol).replace('[host]',location.host);
+	console.log(share_url);
+	$("#social-share-group").attr("data-url",share_url);
 	SocialShareKit.init();
 	
 	$('#geocodingresultswitch').click(function(){
