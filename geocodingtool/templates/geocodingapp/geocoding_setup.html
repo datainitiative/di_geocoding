@@ -146,9 +146,10 @@
 			</div>
 		</div>
 	{% else %}
+		<br/>
 		<div class="row">
 			<div class="alert alert-danger">
-				You have exceeded 500 geocoding limits today. Please try it again tomorrow.
+				{{error_msg | safe}}
 			</div>
 		</div>
 	{% endif %}

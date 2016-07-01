@@ -26,6 +26,8 @@ urlpatterns = patterns('geocodingapp.views',
 	url(r'^geocoding/results$','geocoding_result'),
 	url(r'^geocoding/results_admin$','geocoding_result_admin'),
 	url(r'^geocoding/download_results/(?P<task_id>\d+)/$','exportcsv_geocodingresults'),
+	url(r'^geocoding/fullscreen_map_results/(?P<task_id>\d+)/$','fullscreen_map_results'),
+	url(r'^geocoding/share_results/(?P<task_id>\d+)/$','share_geocodingresults'),
 	url(r'^geocoding/get_cf_link$','get_cf_link'),
 	url(r'^geocoding/no_cf_link/(?P<task_id>\d+)/$','no_cf_link'),
 	

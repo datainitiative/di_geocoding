@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 
-from geocodingtool.settings import STORAGE_ROOTPATH
+from geocodingtool.settings import STORAGE_ROOTPATH, MAX_GEOCODING_LIMIT
 
 #==================
 # Geography Models
@@ -435,8 +435,8 @@ class GeocoderUsage(models.Model):
 class UserGeocodingLimit(models.Model):
 #    id = models.IntegerField(primary_key=True)
     user = models.ForeignKey(User)
-    user_balance = models.IntegerField(default=500)
-    last_geocoding_time = models.DateTimeField(auto_now=True)
+    user_balance = models.IntegerField(default=MAX_GEOCODING_LIMIT)
+    last_geocoding_time = models.DateTimeField(auto_now=False, null=True)
     
     def __unicode__(self):
         return str(self.id)
@@ -459,4 +459,4 @@ class UserGeocodingLimit(models.Model):
 
     class Meta:
         db_table = u'user_geocoding_limit'
-        ordering = ['id']  
+        ordering = ['id']

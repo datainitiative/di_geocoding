@@ -573,6 +573,9 @@ def api_geocoding(address,usage_id=None):
 def instant_geocoding(request):
     address = request.POST["address"]
     print "inst geo for address: ", address
+    # Calculate user geocoding usage
+    user = User.objects.get(username=request.user)
+    user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
     try:
         print "search in format address"
         get_address = FormattedAddress.objects.get(address=address)
@@ -602,6 +605,9 @@ def instant_geocoding(request):
         except:
             print "address fail"
             result = api_geocoding(address,None)
+            # Substract geocoding usage from user's geocoding balance
+            user_geocoding_limit.user_balance -=  1
+            user_geocoding_limit.last_geocoding_time = datetime.datetime.now()        
             print "api geoocding result: ", result
             point = json.dumps(result["point"])
             geocoder = result["geocoder"]
@@ -646,60 +652,99 @@ def instant_geocoding(request):
                 )
                 new_address.save()
 
+    user_geocoding_limit.save()
+    
     return HttpResponse(json.dumps(response_data),content_type="application/json")
 
 @login_required
 @render_to("geocodingapp/geocoding_setup.html")
 def geocoding_setup(request):
-    exceed_limit = False
-#    # check if exceed limit
-#    user = User.objects.get(username=request.user)
-#    user_geocoding_limit = UserGeocodingLimit.objects.get(user=user).user_balance
-    
+    task_id = None
+    preview_table_headers = None
+    preview_table_content = None
+    error_msg = None
     if request.GET["task"]:
-        task_id = int(request.GET["task"])
-    # read task file
-    task = Task.objects.get(id=task_id)
-    file_path = task.file.path
-    file_ext = file_path[file_path.rfind("."):]
-    ## read excel file
-    if file_ext in EXCEL_FILE_EXTENSIONS:    
-        wb = load_workbook(file_path,read_only=True)
-        sheet_names = wb.get_sheet_names()
-        ws = wb[sheet_names[0]]
-        rownum = ws.get_highest_row()
-        colnum = ws.get_highest_column()
-        colletter = str(_get_column_letter(colnum))
-        preview_range = "A1:%s11" % colletter
-        preview_table = []
-        for row in ws.iter_rows(preview_range):
-            tmp_row = []
-            for cell in row:
-                if cell.value:
-                    tmp_row.append(cell.value)
+        exceed_limit = False
+        user = User.objects.get(username=request.user) 
+        user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
+        if user_geocoding_limit.last_geocoding_time:
+            d = datetime.datetime.now().date() - user_geocoding_limit.last_geocoding_time.replace(tzinfo=None).date()
+            if d.days >= 1:
+                # current date from last geocoding date is euqal or long than one day
+                # reset balance to 500
+                user_geocoding_limit.user_balance = MAX_GEOCODING_LIMIT
+                user_geocoding_limit.save()
+
+            gocoding_balance = user_geocoding_limit.user_balance
+            print "balance: ", gocoding_balance
+            if gocoding_balance == 0:
+                print "out of balance"
+                exceed_limit = True
+                error_msg = "You have exceeded <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                            "Your balance will be reset after 11:59pm today. " + \
+                            "Please try it again tomorrow."                
+            else:
+                task_id = int(request.GET["task"])
+                # read task file
+                task = Task.objects.get(id=task_id)
+                file_path = task.file.path
+                file_ext = file_path[file_path.rfind("."):]
+                ## read excel file
+                if file_ext in EXCEL_FILE_EXTENSIONS:    
+                    wb = load_workbook(file_path,read_only=True)
+                    sheet_names = wb.get_sheet_names()
+                    ws = wb[sheet_names[0]]
+                    rownum = ws.get_highest_row()
+                    colnum = ws.get_highest_column()
+                    colletter = str(_get_column_letter(colnum))
+                    preview_range = "A1:%s%d" % (colletter,min(11,rownum))
+                    preview_table = []
+                    for row in ws.iter_rows(preview_range):
+                        tmp_row = []
+                        for cell in row:
+                            if cell.value:
+                                tmp_row.append(cell.value)
+                            else:
+                                tmp_row.append("")
+                        preview_table.append(tmp_row)
+                ## read csv file
+                elif file_ext in CSV_FILE_EXTENSIONS:
+                    preview_table = []
+                    with open(file_path,'rb') as csvfile:
+                        csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
+                        rownum = sum(1 for row in csvreader)
+                        csvfile.seek(0) # return to the top of file
+                        for i in range(min(11,rownum)):
+                            preview_table.append(csvreader.next())
                 else:
-                    tmp_row.append("")
-            preview_table.append(tmp_row)
-    ## read csv file
-    elif file_ext in CSV_FILE_EXTENSIONS:
-        preview_table = []
-        with open(file_path,'rb') as csvfile:
-            csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
-            for i in range(11):
-                preview_table.append(csvreader.next())
+                        print "file not supported"
+                        error_msg = "This file format is not supported. Please upload a new file."
+                        preview_table = None
+                if (rownum - 1) > gocoding_balance:
+                    exceed_limit = True
+                    error_msg = "Number of records exceeds <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                                "The file contains <strong>%d</strong> records. " % rownum + \
+                                "Your remaining balance for today is <strong>%d</strong>.</br>" % gocoding_balance + \
+                                "Your balance will be reset after 11:59pm today. " + \
+                                "Please try it again tomorrow."
+                if preview_table:
+                    preview_table_headers = preview_table[0]
+                    preview_table_content = preview_table[1:]
+                else:
+                    preview_table_headers = None
+                    preview_table_content = None
     else:
-        print "file not supported"
-        preview_table = None
-    if preview_table:
-        print preview_table
-        preview_table_headers = preview_table[0]
-        preview_table_content = preview_table[1:]
-    else:
-        preview_table_headers = None
-        preview_table_content = None
-    
+        exceed_limit = True
+        error_msg = "You don't have access to this page"
+#    class UserGeocodingLimit(models.Model):
+#    #    id = models.IntegerField(primary_key=True)
+#        user = models.ForeignKey(User)
+#        user_balance = models.IntegerField(default=500)
+#        last_geocoding_time = models.DateTimeField(auto_now=False, null=True)
+
     return {
             'exceed_limit': exceed_limit,
+            'error_msg': error_msg,
             'task_id': task_id,
             'preview_table_headers': preview_table_headers,
             'preview_table_content': preview_table_content
@@ -718,7 +763,9 @@ def start_geocoding(request):
     result_headers = []
     if "label" in request.GET:
         if request.GET["label"] != 'None':
-            result_headers.append(request.GET["label"])    
+            result_headers.append(request.GET["label"])
+        else:
+            result_headers.append(request.GET["address"])
     if "address" in request.GET:
         if request.GET["address"] != 'None':
             result_headers.append(request.GET["address"])
@@ -799,6 +846,9 @@ def start_geocoding(request):
         
     if is_file_supported:
         # start geocoding
+        # Calculate user geocoding usage
+        user = User.objects.get(username=request.user) 
+        user_geocoding_limit = UserGeocodingLimit.objects.get(user=user)
         for result in result_list:
             address = result['address']        
             # Check if address exists
@@ -853,6 +903,10 @@ def start_geocoding(request):
                     # Create New Google Geocoder Usage
                     google_usage = update_google_geocoder_usage(None,0,True)
                     tmp_result = api_geocoding(address,google_usage.id)
+                    # Substract geocoding usage from user's geocoding balance
+                    user_geocoding_limit.user_balance -=  1
+                    user_geocoding_limit.last_geocoding_time = datetime.datetime.now()
+                    user_geocoding_limit.save()
                     tmp_point = tmp_result["point"]
                     if tmp_point == "Failed!":
                         formatted_address = None
@@ -900,6 +954,7 @@ def start_geocoding(request):
 
         task.has_result = True
         task.save()
+        user_geocoding_limit.save()
     
     redirect_url = "%s/geocoding/results?task=%d" % (ROOT_APP_URL,task_id)
     return HttpResponseRedirect(redirect_url)
@@ -943,6 +998,47 @@ def no_cf_link(request,task_id):
 @render_to("geocodingapp/geocoding_results.html")
 def geocoding_result(request):
     task_id = int(request.GET["task"])
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@login_required
+@render_to("geocodingapp/fullscreen_map_results.html")
+def fullscreen_map_results(request,task_id):
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@render_to("geocodingapp/share_geocoding_results.html")
+def share_geocodingresults(request,task_id):
     task = Task.objects.get(id=task_id)
     task_results = GeocodingResult.objects.filter(task=task)
     points = []

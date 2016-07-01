@@ -13,6 +13,8 @@
 <link rel="stylesheet" href="{% static 'bootstrap-slider/css/bootstrap-slider.min.css' %}">
 <!-- Enjoyhint style -->
 <link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
+<!-- Social Share Kit -->
+<link rel="stylesheet" href="{% static 'social-share-kit/css/social-share-kit.css' %}" />
 <style>
 #map { height: 600px; }
 .panel-heading-link { color: #FFF!important;}
@@ -69,10 +71,10 @@
 {% endif %}
 {% if user|has_group:"Staff Admin" %}
 <li><a href="{% url 'admin:index' %}geocodingapp/">App Admin</a></li>
-{% endif %}
 <li><a href="{% url 'admin:index' %}geocodingapp/project/">Project List</a></li>
 <li><a href="{% url 'admin:index' %}geocodingapp/task/">Task List</a></li>
-<li>Geocoding Results</li>
+{% endif %}
+<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/">Dashboard</a></li>
 </ul>
 {% endblock %}
 
@@ -135,6 +137,7 @@
 			<div id="panel-map" class="panel panel-primary">
 				<div id="panel-map-header" class="panel-heading">
                     <a data-toggle="collapse" href="#mapview" class="panel-heading-link" id="mapviewswitch">View on the Map (click to Hide)</a>
+					<a id="btn-download-csv" class="btn btn-info pull-right" style="margin-top:-7px;" title="Open full map in new window" target="_blank" href="{% setting 'ROOT_APP_URL' %}/geocoding/fullscreen_map_results/{{task_id}}/">&nbsp;&nbsp;<i class="fa fa-external-link fa-lg"></i>&nbsp;&nbsp;</a>
 				</div>
                 <div id="mapview" class="panel-collapse collapse in">
                     <div class="panel-body">
@@ -155,23 +158,20 @@
                         </div>
                     </div>
                 </div>
-                <!-- footer
-				<a href="{% setting 'ADMIN_ROOT_URL' %}">
-					<div class="panel-footer">
-						<span class="pull-left">link</span>
-						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
-						<div class="clearfix"></div>
+				<div class="panel-footer">
+					<div class="pull-right">
+						<strong><i class="fa fa-share-alt"></i> Share the Map</strong>
+						<div id="social-share-group" class="ssk-group" data-url="{% setting 'ROOT_APP_URL' %}/geocoding/share_results/{{task_id}}/" data-text="I have mapped my data with the Geocoding Tool! [host]{% setting 'ROOT_APP_URL' %}/geocoding/share_results/{{task_id}}/">
+							<a href="" class="ssk ssk-twitter"></a>
+							<a href="" class="ssk ssk-google-plus"></a>
+							<a href="" class="ssk ssk-facebook"></a>
+						</div>
 					</div>
-				</a>
-                -->
+					<div class="clearfix"></div>
+				</div>
 			</div>
 		</div>
 	</div>
-    <div class="row">
-		<div class="col-lg-12">
-            <div id="map-image"></div>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
@@ -197,11 +197,17 @@
 <!-- Enjoyhint JS -->
 <script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
 <script src="{% static 'sitetour/sitetour.js' %}"></script>
+<!-- Social Share Kit -->
+<script src="{% static 'social-share-kit/js/social-share-kit.js' %}"></script>
 <!-- page JS -->
 <script>
 $(document).ready(function() {
 	// Page JS
 	$("#div-radius-slider").hide();
+	var share_text = $("#social-share-group").attr("data-text");
+	share_text = share_text.replace('[host]',location.host);
+	$("#social-share-group").attr("data-text",share_text);
+	SocialShareKit.init();
 	
 	$('#geocodingresultswitch').click(function(){
 		$(this).html(function(){
