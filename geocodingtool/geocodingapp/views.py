@@ -675,64 +675,64 @@ def geocoding_setup(request):
                 user_geocoding_limit.user_balance = MAX_GEOCODING_LIMIT
                 user_geocoding_limit.save()
 
-            gocoding_balance = user_geocoding_limit.user_balance
-            print "balance: ", gocoding_balance
-            if gocoding_balance == 0:
-                print "out of balance"
-                exceed_limit = True
-                error_msg = "You have exceeded <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
-                            "Your balance will be reset after 11:59pm today. " + \
-                            "Please try it again tomorrow."                
+        gocoding_balance = user_geocoding_limit.user_balance
+        print "balance: ", gocoding_balance
+        if gocoding_balance == 0:
+            print "out of balance"
+            exceed_limit = True
+            error_msg = "You have exceeded <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                        "Your balance will be reset after 11:59pm today. " + \
+                        "Please try it again tomorrow."                
+        else:
+            task_id = int(request.GET["task"])
+            # read task file
+            task = Task.objects.get(id=task_id)
+            file_path = task.file.path
+            file_ext = file_path[file_path.rfind("."):]
+            ## read excel file
+            if file_ext in EXCEL_FILE_EXTENSIONS:    
+                wb = load_workbook(file_path,read_only=True)
+                sheet_names = wb.get_sheet_names()
+                ws = wb[sheet_names[0]]
+                rownum = ws.get_highest_row()
+                colnum = ws.get_highest_column()
+                colletter = str(_get_column_letter(colnum))
+                preview_range = "A1:%s%d" % (colletter,min(11,rownum))
+                preview_table = []
+                for row in ws.iter_rows(preview_range):
+                    tmp_row = []
+                    for cell in row:
+                        if cell.value:
+                            tmp_row.append(cell.value)
+                        else:
+                            tmp_row.append("")
+                    preview_table.append(tmp_row)
+            ## read csv file
+            elif file_ext in CSV_FILE_EXTENSIONS:
+                preview_table = []
+                with open(file_path,'rb') as csvfile:
+                    csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
+                    rownum = sum(1 for row in csvreader)
+                    csvfile.seek(0) # return to the top of file
+                    for i in range(min(11,rownum)):
+                        preview_table.append(csvreader.next())
             else:
-                task_id = int(request.GET["task"])
-                # read task file
-                task = Task.objects.get(id=task_id)
-                file_path = task.file.path
-                file_ext = file_path[file_path.rfind("."):]
-                ## read excel file
-                if file_ext in EXCEL_FILE_EXTENSIONS:    
-                    wb = load_workbook(file_path,read_only=True)
-                    sheet_names = wb.get_sheet_names()
-                    ws = wb[sheet_names[0]]
-                    rownum = ws.get_highest_row()
-                    colnum = ws.get_highest_column()
-                    colletter = str(_get_column_letter(colnum))
-                    preview_range = "A1:%s%d" % (colletter,min(11,rownum))
-                    preview_table = []
-                    for row in ws.iter_rows(preview_range):
-                        tmp_row = []
-                        for cell in row:
-                            if cell.value:
-                                tmp_row.append(cell.value)
-                            else:
-                                tmp_row.append("")
-                        preview_table.append(tmp_row)
-                ## read csv file
-                elif file_ext in CSV_FILE_EXTENSIONS:
-                    preview_table = []
-                    with open(file_path,'rb') as csvfile:
-                        csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
-                        rownum = sum(1 for row in csvreader)
-                        csvfile.seek(0) # return to the top of file
-                        for i in range(min(11,rownum)):
-                            preview_table.append(csvreader.next())
-                else:
-                        print "file not supported"
-                        error_msg = "This file format is not supported. Please upload a new file."
-                        preview_table = None
-                if (rownum - 1) > gocoding_balance:
-                    exceed_limit = True
-                    error_msg = "Number of records exceeds <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
-                                "The file contains <strong>%d</strong> records. " % rownum + \
-                                "Your remaining balance for today is <strong>%d</strong>.</br>" % gocoding_balance + \
-                                "Your balance will be reset after 11:59pm today. " + \
-                                "Please try it again tomorrow."
-                if preview_table:
-                    preview_table_headers = preview_table[0]
-                    preview_table_content = preview_table[1:]
-                else:
-                    preview_table_headers = None
-                    preview_table_content = None
+                    print "file not supported"
+                    error_msg = "This file format is not supported. Please upload a new file."
+                    preview_table = None
+            if (rownum - 1) > gocoding_balance:
+                exceed_limit = True
+                error_msg = "Number of records exceeds <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                            "The file contains <strong>%d</strong> records. " % rownum + \
+                            "Your remaining balance for today is <strong>%d</strong>.</br>" % gocoding_balance + \
+                            "Your balance will be reset after 11:59pm today. " + \
+                            "Please try it again tomorrow."
+            if preview_table:
+                preview_table_headers = preview_table[0]
+                preview_table_content = preview_table[1:]
+            else:
+                preview_table_headers = None
+                preview_table_content = None
     else:
         exceed_limit = True
         error_msg = "You don't have access to this page"
