@@ -12,6 +12,7 @@ from django.contrib.auth.models import Group
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 # python imports
 from zipfile import *
@@ -1037,6 +1038,7 @@ def fullscreen_map_results(request,task_id):
             points_wlabels.append([result.location.lat,result.location.lng,result.name])
     return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
 
+@xframe_options_exempt # allow this shared page to be embedded in iframe
 @render_to("geocodingapp/share_geocoding_results.html")
 def share_geocodingresults(request,task_id):
     task = Task.objects.get(id=task_id)
