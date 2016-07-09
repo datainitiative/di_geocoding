@@ -20,6 +20,7 @@ import StringIO
 import sys,os
 import tempfile,zipfile
 import base64
+from httplib import HTTPSConnection
 
 # ---------------
 # Django Imports
