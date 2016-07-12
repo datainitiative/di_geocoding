@@ -1151,7 +1151,12 @@ def geocoding_result(request):
         if result.location:
             points.append([result.location.lat,result.location.lng])
             points_wlabels.append([result.location.lat,result.location.lng,result.name])
-    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+    return {
+            "task_id":task_id,
+            "task_title":task.description,
+            "task_results":task_results,
+            "g_points":points,
+            "data_points":json.dumps(points_wlabels).replace("'",r"\'")}
 
 @login_required
 @render_to("geocodingapp/fullscreen_map_results.html")
