@@ -1,5 +1,5 @@
 *.log
 *.pyc
 *.pyo
-settings.py
 settings_server.py
+settings_local.py
