@@ -1,5 +1,5 @@
 # Django generated secret key
-SECRET_KEY = 'django secrity key'
+SECRET_KEY = "django secrity key"
 
 DEBUG = True
 TEMPLATE_DEBUG = True
