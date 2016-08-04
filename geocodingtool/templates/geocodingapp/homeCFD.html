@@ -1,3 +1,5 @@
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +8,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-<title>Bootstrap 101 Template</title>
+<title>Login | Colorado Data Locator</title>
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"> 
 
@@ -67,25 +69,21 @@ p {
 	margin:150px 45px 150px 100px;
 	float: left;
 	padding-right: 10px;
-
-
 }
 .loginButton{
 	background-color: #FA4616;
 	color:white;
-	height: 
-	width: 75px;
+	width: 100px;
 	margin:5px	0;
 	border: none;
-	
-
 }
 .signupButton{
 	background-color: #6AD1E3;
 	color:white;
 	display: block;	
-	width: 75px;	
+	width: 100px;	
 	margin:5px	0;
+	border: none;
 }
 .helloBack{
 	background-color: #6AD1E3;
@@ -159,20 +157,20 @@ p {
 		<div class="col-md-12 firstRow">
 			<div class="col-md-4">
 				<div class="col-md-6 ">
-					<img class="garyLogo" src="imgCFD/placeholdLogoGARY.png">
+					<img class="garyLogo" src="{% static 'img/imgCFD/placeholdLogoGARY.png' %}">
 				</div>
 				<div class="col-md-6 headerLeft">
-					<img class="shiftLogo" src="imgCFD/placeholderSHIFT.png">
+					<img class="shiftLogo" src="{% static 'img/imgCFD/placeholderSHIFT.png' %}">
 				</div>
 			</div>
 			<div class="col-md-8 headerMiddle">
-				<img class="cdlLogo" src="imgCFD/placeholderCDL.png">
+				<img class="cdlLogo" src="{% static 'img/imgCFD/placeholderCDL.png' %}">
 			</div>
 		</div>
 	</div>
 	<div class="row ">
 			<div class="col-md-4">
-				<div class="loginSquare">
+				<div class="loginSquare pull-right">
 					<div class="col-md-12 loginPosition">
 						<h2 class="fRight">Login</h2>
 					</div>
@@ -220,10 +218,7 @@ p {
 	<!-- </div> -->
 </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <!-- <script src="js/bootstrap.min.js"></script> -->
-    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-
   </body>
 </html>
