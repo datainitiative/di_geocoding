@@ -35,6 +35,7 @@
 	<li><a href="{% url 'admin:index' %}geocodingapp/project/">Project List</a></li>
 	-->
 	{% endif %}
+	<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/">Dashboard</a></li>
 	{% if user|has_group:"Staff Admin" %}
 	<li><a href="{% url 'admin:index' %}geocodingapp/">App Admin</a></li>
 	<li><a href="{% url 'admin:index' %}geocodingapp/task/">Task List</a></li>
