@@ -24,6 +24,7 @@ from util import *
 # Import from app
 from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
+from geocodingtool.settings import WHAT3WORDS_API_KEY
 from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
 from geocodingtool.settings import CF_GEOTABLE
 from geocodingtool.settings import SINGLE_GEOCODINGTASK_ID
@@ -188,6 +189,39 @@ def home(request):
         hp_template = "geocodingapp/home.html"
     else:      
         hp_template = "geocodingapp/home2.html"
+        
+    return render_to_response(
+        hp_template,
+        {"num_project": num_project,
+        "num_task": num_task,
+        "num_user_task": num_user_task,
+        "num_user_complete_tasks": num_user_complete_tasks,
+        "num_user_pending_tasks": num_user_pending_tasks,
+        "geocoder_status": geocoder_status,
+        "single_geocodingtask_id": SINGLE_GEOCODINGTASK_ID},
+        context_instance=RequestContext(request)
+        )
+        
+# Home page for FUN
+@login_required
+@render_to("geocodingapp/home2_fun.html")
+def home_fun(request):
+    projects = Project.objects.all()
+    num_project = len(projects)
+    tasks = Task.objects.all()
+    num_task = len(tasks)
+    geocoder_status = update_all_geocoders_usage()
+    user = User.objects.get(username=request.user)
+    user_tasks = Task.objects.filter(owner=user)
+    num_user_task = len(user_tasks)
+    user_complete_tasks = Task.objects.filter(owner=user).filter(has_result=True)
+    num_user_complete_tasks = len(user_complete_tasks)
+    user_pending_tasks = Task.objects.filter(owner=user).filter(has_result=False)
+    num_user_pending_tasks = len(user_pending_tasks)
+    if user.groups.filter(name="Admin View").exists():
+        hp_template = "geocodingapp/home_fun.html"
+    else:      
+        hp_template = "geocodingapp/home2_fun.html"
         
     return render_to_response(
         hp_template,
@@ -658,6 +692,108 @@ def instant_geocoding(request):
     return HttpResponse(json.dumps(response_data),content_type="application/json")
 
 @login_required
+def instant_geocoding_fun(request):
+    address = request.POST["address"]
+    print "inst geo FUN for address: ", address
+    # Calculate user geocoding usage
+    user = User.objects.get(username=request.user)
+    user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
+    try:
+        print "search in format address"
+        get_address = FormattedAddress.objects.get(address=address)
+        get_formatted_address = get_address
+        point = json.dumps([get_formatted_address.point.lat,get_formatted_address.point.lng])
+        geocoder = get_formatted_address.geocoder.name
+        confidence = get_formatted_address.confidence_level.score
+        response_data = {
+            'point': point,
+            'geocoder': geocoder,
+            'confidence': confidence
+        }
+    except:
+        print "format fail"
+        try:
+            print "search in address"
+            get_address = AddressInventory.objects.get(address=address)
+            get_formatted_address = get_address.formatted_address
+            point = json.dumps([get_formatted_address.point.lat,get_formatted_address.point.lng])
+            geocoder = get_formatted_address.geocoder.name
+            confidence = get_formatted_address.confidence_level.score
+            response_data = {
+                'point': point,
+                'geocoder': geocoder,
+                'confidence': confidence
+            }        
+        except:
+            print "address fail"
+            result = api_geocoding(address,None)
+            # Substract geocoding usage from user's geocoding balance
+            user_geocoding_limit.user_balance -=  1
+            user_geocoding_limit.last_geocoding_time = datetime.datetime.now()        
+            print "api geoocding result: ", result
+            point = json.dumps(result["point"])
+            geocoder = result["geocoder"]
+            confidence = result["confidence"]
+            response_data = {
+                'point': point,
+                'geocoder': geocoder,
+                'confidence': confidence
+            }
+            print "api response data: ", response_data
+            # Google Geocoder Usage
+            update_google_geocoder_usage(None,1,True)
+            point = result["point"]
+            print "point: ",point
+            # Save address to address inventory
+            if point != "Failed!":
+                point = Point(lat=point[0],lng=point[1])
+                point.save()
+                print "save point"
+                geocoder = Geocoder.objects.get(name=result['geocoder'])
+                confidence = ConfidenceLevel.objects.get(score=result['confidence'])
+                accuracy = result['accuracy']
+                formattedaddress = result['formattedaddress']
+                print "formatted address: ", formattedaddress
+                try:
+                    print "try get fortmat"
+                    formatted_address = FormattedAddress.objects.get(address=formattedaddress)
+                except:
+                    print "no format match, save new format address"
+                    formatted_address = FormattedAddress(
+                        address = formattedaddress,
+                        point = point,
+                        geocoder = geocoder,
+                        confidence_level = confidence,
+                        accuracy = accuracy
+                    )
+                    formatted_address.save()
+                print "save new address"
+                new_address = AddressInventory(
+                    address = address,
+                    formatted_address = formatted_address
+                )
+                new_address.save()
+
+    user_geocoding_limit.save()
+    
+    # get what3words coordinate words
+    str_lat = response_data['point'].split(", ")[0][1:]
+    str_lng = response_data['point'].split(", ")[1][:-1] 
+    
+    conn = HTTPSConnection("api.what3words.com")   
+    what3words_request = "/v2/reverse?coords=%s,%s&key=%s&lang=en&format=json&display=full" % (str_lat,str_lng,WHAT3WORDS_API_KEY)
+    conn.request("GET", what3words_request)
+    
+    res = conn.getresponse()
+    data = res.read()
+    what3words_returns = json.loads(data)
+    print response_data
+    response_data['words'] = what3words_returns['words']
+    print response_data
+    
+    return HttpResponse(json.dumps(response_data),content_type="application/json")
+
+@login_required
 @render_to("geocodingapp/geocoding_setup.html")
 def geocoding_setup(request):
     task_id = None
@@ -1015,7 +1151,12 @@ def geocoding_result(request):
         if result.location:
             points.append([result.location.lat,result.location.lng])
             points_wlabels.append([result.location.lat,result.location.lng,result.name])
-    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+    return {
+            "task_id":task_id,
+            "task_title":task.description,
+            "task_results":task_results,
+            "g_points":points,
+            "data_points":json.dumps(points_wlabels).replace("'",r"\'")}
 
 @login_required
 @render_to("geocodingapp/fullscreen_map_results.html")
