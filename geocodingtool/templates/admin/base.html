@@ -144,28 +144,12 @@
 								<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/"><i class="fa fa-dashboard"></i> Dashboard</a></li>
 								{% block homepageswitch %}{% endblock %}
                                 <li><a href="{% setting 'ROOT_APP_URL' %}/user/profile"><i class="fa fa-user"></i> {% trans 'User Profile' %}</a></li>
-								<!--
-                                {% if user.has_usable_password %}                              
-                                <li><a href="{% url 'admin:password_change' %}">{% trans 'Change password' %}</a></li>
-                                {% endif %}
-								-->
 								{% if user|has_group:"Superuser" %}
 									<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/"><i class="fa fa-gear"></i> Administration</a></li>
 								{% elif user|has_group:"Staff Admin" %}
 									<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/"><i class="fa fa-gear"></i> Administration</a></li>
 								{% endif %}
-                                <!--
-								{% if user|has_group:"Steering Committee Staff" %}
-								{% else %}
-									<li><a href="{% setting 'ROOT_APP_URL' %}/output/report/"><i class="fa fa-edit"></i> Report Activity Output</a></li>
-								{% endif %}
-								{% if user|has_group:"Superuser" or user|has_group:"MHC Admin"%}
-									<li><a href="{% setting 'ROOT_APP_URL' %}/output/report/report_builder/"><i class="fa fa-pie-chart"></i> Build Your Report</a></li>
-								{% endif %}
-								{% if user|has_group:"Superuser" or user|has_group:"MHC Admin" or user|has_group:"Priority Area Coordinator" %}
-									<li><a href="{% setting 'ROOT_APP_URL' %}/output/report/exportbuilder"><i class="fa fa-download"></i> Download Output</a></li>
-								{% endif %}
-                                -->
+								<li class="divider"></li>
                                 <li><a href="{% url 'admin:logout' %}"><i class="fa fa-sign-out"></i> {% trans 'Sign Out' %}</a></li>
                             </ul>
                         </li>
