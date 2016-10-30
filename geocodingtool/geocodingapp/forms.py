@@ -13,6 +13,10 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from util import *
 
 from geocodingapp.models import *
+from geocodingapp.fields import RestrictedFileField
+
+class TaskForm(forms.ModelForm):
+    file = RestrictedFileField(content_types=['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) # limit to Excel and CSV
 
 # User Forms
 class UserProfileForm(UserChangeForm):

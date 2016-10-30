@@ -1,0 +1,224 @@
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>Login | Colorado Data Locator</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet"> 
+
+<style>
+* {
+  border-radius: 0 !important;
+}	
+h1	 {
+	color:white;
+	font-family: Raleway;
+}
+h2 {
+	font-family: Raleway;
+}
+p {
+	font-size: 16px;
+	color:white;
+	font-family: Raleway;
+}
+.divider h1, h2{
+	font-weight: 800;
+}
+.container{
+	padding: 0;
+}
+.navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top, .container {
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom:0;
+    }
+.garyLogo{
+	height: 150px;
+	float: right;
+}
+.shiftLogo{
+	height: 150px;
+}
+.cdlLogo{
+	height: 200px;
+}
+	
+.firstRow{
+/*	background-color: orange;*/
+	height: 100px;
+
+}
+.headerMiddle{
+	padding-left: 0px;
+    margin-left: -10px;
+}
+.headerLeft{
+}
+
+.loginSquare{
+	height: 300px;
+	width: 300px ;
+	background-color:lightgrey;
+	margin:150px 45px 150px 100px;
+	float: left;
+	padding-right: 10px;
+}
+.loginButton{
+	background-color: #FA4616;
+	color:white;
+	width: 100px;
+	margin:5px	0;
+	border: none;
+}
+.signupButton{
+	background-color: #6AD1E3;
+	color:white;
+	display: block;	
+	width: 100px;	
+	margin:5px	0;
+	border: none;
+}
+.helloBack{
+	background-color: #6AD1E3;
+	height: 400px;
+	padding-left: 20px;	
+	margin:100px 0 0 0;
+	top:50%;
+}
+
+.learnmoreButton{
+	background-color: #00587C;
+	color:white;
+	border:none;
+}
+.fRight{
+	float: right;
+}
+.rButton{
+	padding-right: 0;
+}
+.loginInput{
+	width: 150px;
+	float: right;
+	margin:5px	0;	
+
+}
+.divider{	
+	border-right: 1px solid white;
+	margin: 60px 0 0 0;	
+	padding-right: 50px;	
+}
+.thinText{
+	font-size: 40px;
+	font-weight:100;
+	color:white;
+}
+.locationText{
+	font-size: 20px;
+	font-weight:bold;
+	color:white;
+}
+.tinyText{
+	font-size: 12px;
+	color:#00587C;
+}
+.locationPosition{
+	margin: 120px 0 50px 0px;
+}
+.loginPosition{
+	margin-top:20px;
+}
+.glyphicon-map-marker{
+	font-size: 75px;
+	color:#9bd9e3;
+	padding: 50% 0;	
+}
+
+@media (min-width: 1200px){
+	.container {
+    width: 100%;
+    margin:0;
+	}
+}
+
+</style>
+</head>
+
+<body>
+<!-- <div class="container"> -->
+	<div class="row ">
+		<div class="col-md-12 firstRow">
+			<div class="col-md-4">
+				<div class="col-md-6 ">
+					<img class="garyLogo" src="{% static 'img/imgCFD/placeholdLogoGARY.png' %}">
+				</div>
+				<div class="col-md-6 headerLeft">
+					<img class="shiftLogo" src="{% static 'img/imgCFD/placeholderSHIFT.png' %}">
+				</div>
+			</div>
+			<div class="col-md-8 headerMiddle">
+				<img class="cdlLogo" src="{% static 'img/imgCFD/placeholderCDL.png' %}">
+			</div>
+		</div>
+	</div>
+	<div class="row ">
+			<div class="col-md-4">
+				<div class="loginSquare pull-right">
+					<div class="col-md-12 loginPosition">
+						<h2 class="fRight">Login</h2>
+					</div>
+					<div class="col-md-12">
+						<form class="fRight">
+							<div class="form-group">
+							    <input type="email" class="form-control loginInput" id="exampleInputEmail1" placeholder="Email">
+							</div>
+							<div class="form-group">						    
+							    <input type="password" class="form-control loginInput" id="exampleInputPassword1" placeholder="Password">
+							</div>
+							<div class="col-md-12 rButton">  
+								<button type="submit" class="btn btn-default loginButton fRight">log in</button>
+							</div>
+							<div class="col-md-12 rButton">
+								<button type="submit" class="btn btn-default signupButton fRight">sign up</button>
+							</div>
+						</form>
+					</div>
+
+					
+				</div>
+			</div>
+			<div class="col-md-8 helloBack">
+				<div class="col-md-7 divider">
+					<h1>Hello!</h1>
+					<p>Welcome to Colorado Data Locator</p>
+					<p>The CDL is avgeocoding tool that facilitates spatial analysis to locate addresses using a series of online geocoding APIs.</p>
+					<p>In simple terms we make the task of mapping your data easier and allow you to do more with it.</p>
+					<p class="tinyText">This project is brought to you by Shift Research Lab with help from Code for Denver</p>
+					<button type="submit" class="btn btn-default learnmoreButton">learn more</button>	
+				</div>
+				<div class="col-md-5 locationPosition">
+					<div class="col-md-3">
+						<div class="glyphicon glyphicon-map-marker"></div>
+					</div>
+					<div class="col-md-9">
+						<div class="locationText">DENVER, COLORADO</div>
+						<div class="thinText">Lattitude</div>
+						<div class="thinText">Longitude</div>
+					</div>
+				
+				</div>
+			</div>
+	<!-- </div> -->
+</div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </body>
+</html>

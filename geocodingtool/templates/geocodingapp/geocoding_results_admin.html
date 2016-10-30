@@ -1,0 +1,409 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+{% block title %}Geocoding | Geocoding Tool{% endblock %}
+{% block extrastyle %}
+<!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />-->
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.css" />
+<!-- Esri Leaflet Geocoder -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.css">
+<!-- Prune Cluster -->
+<link rel="stylesheet" href="{% static 'prunecluster/LeafletStyleSheet.css' %}">
+<!-- Bootstrap-Slider -->
+<link rel="stylesheet" href="{% static 'bootstrap-slider/css/bootstrap-slider.min.css' %}">
+<!-- Enjoyhint style -->
+<link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
+<style>
+#map { height: 600px; }
+.panel-heading-link { color: #FFF!important;}
+.size-slider {
+    display: block;
+    width: 340px;
+    position: absolute;
+    right: 150px;
+    top: 55px;
+    margin-top: 12px;
+    margin-right: 12px;
+    padding: 5px;
+    background-color: #FFF;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+    border-radius: 4px;
+    z-index: 800;
+}
+.my-control-left {
+    padding-left: 5px!important;
+    padding-right: 0px!important;
+}
+.my-control-right {
+    padding-left: 0px!important;
+    padding-right: 10px!important;
+}
+.slider {
+    width: 95%!important;
+    float: right!important;
+}
+#input-cluster-size-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-size-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
+#input-cluster-radius-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-radius-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
+</style>
+{% endblock %}
+
+{% block site-tour %}
+	<li style="padding-top:10px"><button id="btn-site-tour-geocoding-result" class="btn btn-warning btn-circle" title="Site Guide" data-placement="right"><i class="fa fa-question fa-2x" style="margin-top:-3px;"></i></button></li>
+{% endblock %}
+
+{% block breadcrumbs %}
+<ul class='breadcrumb'>
+<li><a href="{% setting 'ROOT_APP_URL' %}/home/">{% trans 'Home' %}</a></li>
+{% if user|has_group:"Superuser" %}
+<li><a href="{% url 'admin:index' %}">{% trans 'Superuser Admin Home' %}</a></li>
+{% endif %}
+{% if user|has_group:"Staff Admin" %}
+<li><a href="{% url 'admin:index' %}geocodingapp/">App Admin</a></li>
+{% endif %}
+<li><a href="{% url 'admin:index' %}geocodingapp/project/">Project List</a></li>
+<li><a href="{% url 'admin:index' %}geocodingapp/task/">Task List</a></li>
+<li>Geocoding Results</li>
+</ul>
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h3 class="page-header">Geocoding Results for <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/{{task_id}}">Task #{{task_id}}</a></h3>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div id="panel-table" class="panel-heading">
+                    <a data-toggle="collapse" href="#geocodingresults" id="geocodingresultswitch">Geocoding Result Table (Click to Show)</a>
+                    <a id="btn-download-csv" class="btn btn-warning pull-right" style="margin-top:-7px;" title="Download CSV" href="{% setting 'ROOT_APP_URL' %}/geocoding/download_results/{{task_id}}/">&nbsp;&nbsp;<i class="fa fa-download fa-lg"></i>&nbsp;&nbsp;</a>
+                </div>
+				<div id="geocodingresults" class="panel-collapse collapse">
+					<div class="panel-body">
+						<div class="dataTable_wrapper">
+							<table class="table table-striped table-bordered table-hover" id="dataTables-example">
+								<thead>
+									<tr>
+										<th></th>
+										<th>Label</th>
+										<th>Address</th>
+										<th>Location</th>
+										<th>Geocoder</th>
+										<th id="tbheader-confidence">Confidence Level <span title="Confidence Level is calculated based on the bounding box returned by each geocoder. It ranges from 0 to 10, where 0 indicates no matching results or unable to determin bounding box, and 10 indicates less than 0.25km distance between the southwest and northeast corners of the bounding box."><i class="fa fa-question-circle"></i></span></th>
+										{% if user|has_group:"Staff Admin" %}
+											<th>Accuracy</th>
+											<th>Final Source</th>
+										{% endif %}
+										<th>Neighborhood Summary</th>
+										{% if user|has_group:"Staff Admin" %}
+											<th>Edit</th>
+										{% endif %}
+									</tr>
+								</thead>
+								<tbody>
+									{% for r in task_results %}
+										<tr class="gradeA" role="row">
+											<td><a href="#panel-map" title="Zoom to on Map" class="record-zoom-to-map" id="{{r.location.lat}},{{r.location.lng}},{{r.name}}"><i class="fa fa-search-plus fa-lg"></i></a></td>
+											<td>{{r.name}}</td>
+											<td>{{r.address}}</td>
+											<td>
+												{% if r.location %}
+													{{r.location.lat}},{{r.location.lng}}
+												{% else %}
+													None
+												{% endif %}
+											</td>
+											<td>{{r.geocoder}}</td>
+											{% if r.confidence_level.score > 7 %}
+												<td>{{r.confidence_level.score}}</td>
+											{% else %}
+												<td><span class="text-danger"><strong>{{r.confidence_level.score}}</strong></span></td>
+											{% endif %}
+											{% if user|has_group:"Staff Admin" %}
+												<td>{{r.accuracy}}</td>
+												<td>{{r.final_source.name}}</td>
+											{% endif %}
+											<td>
+												{% if r.location %}
+													<a href="{% setting 'ROOT_APP_URL' %}/geocoding/get_cf_link?task={{task_id}}&lat={{r.location.lat}}&lng={{r.location.lng}}" target="_blank" class="record-cflink" title="View Neighborhood Summary on Community Facts"><i class="fa fa-bar-chart fa-lg"></i></a>
+												{% endif %}
+											</td>
+											{% if user|has_group:"Staff Admin" %}
+												<td><a href="{% url 'admin:index' %}geocodingapp/geocodingresult/{{r.id}}/" target="_blank" class="record-edit" title="Edit Record"><i class="fa fa-edit fa-lg"></i></a></td>
+											{% endif %}
+										</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+		<div class="col-lg-12">
+			<div id="panel-map" class="panel panel-primary">
+				<div id="panel-map-header" class="panel-heading">
+                    <a data-toggle="collapse" href="#mapview" class="panel-heading-link" id="mapviewswitch">View on the Map (click to Hide)</a>
+				</div>
+                <div id="mapview" class="panel-collapse collapse in">
+                    <div class="panel-body">
+                        <div>
+                            <div id="map"></div>
+                            <div id="div-size-slider" class="size-slider">
+                                <span class="col-sm-3 pull-left my-control-left">Cluster Size</span>
+                                <div class="col-sm-9 pull-right my-control-right">
+                                    <input id="input-cluster-size" data-slider-id='input-cluster-size-slider' type="text" data-slider-min="20" data-slider-max="500" data-slider-step="20" data-slider-value="120">
+                                </div>                               
+                            </div>
+							<div id="div-radius-slider" class="size-slider">
+                                <span class="col-sm-3 pull-left my-control-left">Radius Size</span>
+                                <div class="col-sm-9 pull-right my-control-right">
+                                    <input id="input-radius-size" data-slider-id='input-radius-size-slider' type="text" data-slider-min="5" data-slider-max="50" data-slider-step="5" data-slider-value="25">
+                                </div>                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- footer
+				<a href="{% setting 'ADMIN_ROOT_URL' %}">
+					<div class="panel-footer">
+						<span class="pull-left">link</span>
+						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+						<div class="clearfix"></div>
+					</div>
+				</a>
+                -->
+			</div>
+		</div>
+	</div>
+    <div class="row">
+		<div class="col-lg-12">
+            <div id="map-image"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block bottomjs %}
+{{ block.super }}
+<!-- DataTables JavaScript -->
+<script src='{% static "datatables/media/js/jquery.dataTables.min.js" %}'></script>
+<script src='{% static "datatables-plugins/integration/bootstrap/3/dataTables.bootstrap.min.js" %}'></script>
+<!--<script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>-->
+<script src="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.js"></script>
+<!-- Esri Leaflet -->
+<script src="//cdn.jsdelivr.net/leaflet.esri/2.0.0-beta.6/esri-leaflet.js"></script>
+<!-- Esri Leaflet Geocoder -->
+<script src="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.js"></script>
+<!-- Prune Cluster -->
+<script src='{% static "prunecluster/PruneCluster.js"%}'></script>
+<!-- Leaflet Heat -->
+<script src='{% static "leaflet-heat/leaflet-heat.js"%}'></script>
+<!-- JQuery Cookie -->
+<script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+<!-- Bootstrap-Slider -->
+<script src="{% static 'bootstrap-slider/bootstrap-slider.min.js' %}"></script>
+<!-- Enjoyhint JS -->
+<script src="{% static 'enjoyhint/enjoyhint.min.js' %}"></script>
+<script src="{% static 'sitetour/sitetour.js' %}"></script>
+<!-- page JS -->
+<script>
+$(document).ready(function() {
+	// Page JS
+	$("#div-radius-slider").hide();
+	
+	$('#geocodingresultswitch').click(function(){
+		$(this).html(function(){
+			return 'Geocoding Result Table (Click to ' + ($('#geocodingresults').is(':visible') ? 'Show)' : 'Hide)');
+		});
+	});
+	$('#mapviewswitch').click(function(){
+		$(this).html(function(){
+			return 'View on the Map (click to ' + ($('#mapview').is(':visible') ? 'Show)' : 'Hide)');
+		});
+	});
+    
+    // check if cookie exists
+    var visited = $.cookie('visited-geocoding-result');
+    if (visited == null){
+        var visited = $.cookie('visited-geocoding-result','yes',{expires:365,path:'/'});
+        var enjoyhint_instance = new EnjoyHint({});
+        enjoyhint_instance.set(enjoyhint_script_steps_geocoding_result);
+        enjoyhint_instance.run();
+    }
+	
+	// Data Table
+	var table = $('#dataTables-example').DataTable({
+            responsive: true,
+            "order":[[5,"asc"]],
+    });
+	
+	// add a question mark next to search box
+	$("#dataTables-example_filter > label > input").attr("placeholder","search text in results");
+	$("#dataTables-example_filter").append('<div id="search-box-wrapper" class="form-group input-group"></div>');
+	$("#dataTables-example_filter > label > input").appendTo("#search-box-wrapper");
+	$("#search-box-wrapper").width("100%").append('<span class="input-group-btn"><button id="clear-search" class="btn btn-default btn-sm" title="Clear Search"><i class="fa fa-close"></i></button></span>');
+	$("#dataTables-example_filter > label").remove();
+	$("#clear-search").click(function(){
+		table.search('').draw();
+	});
+	
+	// Map JS
+    var map = L.map('map',{maxZoom:19}).setView([39.7645187,-104.9951944], 11);
+    /*
+	var Esri_WorldGrayCanvas = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16
+    }).addTo(map);
+	var OpenSeaMap = L.tileLayer('http://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+        attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+    }).addTo(map);
+	*/
+	
+	var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+		subdomains: 'abcd',
+		maxZoom: 19
+	}).addTo(map);
+	
+	var Esri_WorldStreetMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+		attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+	});
+    
+    // ESRI Leaflet
+    var arcgisOnline = L.esri.Geocoding.arcgisOnlineProvider();
+    // create the geocoding control and add it to the map
+    var searchControl = L.esri.Geocoding.geosearch({
+        providers: [arcgisOnline],
+        position: 'topright'
+    }).addTo(map);
+    // create an empty layer group to store the results and add it to the map
+    var results = L.layerGroup().addTo(map);
+    // listen for the results event and add every result to the map
+    searchControl.on("results", function(data) {
+        results.clearLayers();
+        for (var i = data.results.length - 1; i >= 0; i--) {
+            results.addLayer(L.marker(data.results[i].latlng));
+        };
+    });
+    
+    // Map Functions
+    var map_points = {{g_points}};
+    var data_points = jQuery.parseJSON('{{data_points|safe}}');
+    map.fitBounds(map_points,{padding:[2,2]});
+    // Prune Cluster
+    var leafletView = new PruneClusterForLeaflet();
+    // Set custom marker icon and create on the fly
+    function createIcon(data,category){
+        var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+        var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
+        var myMarkerIcon = L.icon({
+            iconUrl: myMarkerIconSrc,
+            iconRetinaUrl: myMarkerIconSrcRetina,
+            iconSize: [32,34],
+			iconAnchor: [12,33],
+            popupAnchor: [1,-28],
+        });
+        return myMarkerIcon;
+    }
+    var markers = [];
+    $.each(data_points,function(index,p){
+        var marker = new PruneCluster.Marker(p[0],p[1]);
+        marker.data.icon = createIcon; // create icon on the fly
+        marker.data.popup = p[2];
+        markers.push(marker);
+        leafletView.RegisterMarker(marker);
+    });
+    map.addLayer(leafletView);
+    
+    // dynamic cluster size
+    $("#input-cluster-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateSize = function(){
+        leafletView.Cluster.Size = parseInt(this.value);
+        leafletView.ProcessView();
+    };
+    $("#input-cluster-size").change(updateSize);
+	
+	// heatmap
+	var heatMap = L.heatLayer(map_points,{radius:25,max:0.05,blur:10});
+	// dynamic radius size
+    $("#input-radius-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateRadiusSize = function(){
+		heatMap.setOptions({radius:parseInt(this.value),max:0.05,blur:10});
+		heatMap.redraw();
+    };
+    $("#input-radius-size").change(updateRadiusSize);
+	
+	// Zoom to map from table
+	$(".record-zoom-to-map").click(function(){
+		var value = this.id.split(",");
+		var coord = [value[0],value[1]];
+		var name = value[2];
+		var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+        var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
+        var myMarkerIcon = L.icon({
+            iconUrl: myMarkerIconSrc,
+            iconRetinaUrl: myMarkerIconSrcRetina,
+            iconSize: [32,34],
+			iconAnchor: [12,33],
+            popupAnchor: [1,-28],
+        });
+		var tmp_marker = L.marker(coord,{icon:myMarkerIcon}).addTo(map);
+		map.setView(coord,16);
+		tmp_marker.bindPopup(name).openPopup();
+	});
+	
+	// Map layer control
+	/*
+	var baseMaps = {
+		"Grayscale": CartoDB_Positron,
+		"Streets": Esri_WorldStreetMap
+	};
+	var overlayMaps = {
+		"Cluster": leafletView,
+		"Heatmap": heatMap
+	};
+	*/
+	var baseMaps = {
+		"Cluster Map": leafletView,
+		"Heat Map": heatMap
+	};
+	var layerControl = L.control.layers(baseMaps).addTo(map);
+	
+	function changeBaseLayer(e,layer,name){
+		if (e.name == "Heat Map"){
+			$("#div-size-slider").hide();
+			$("#div-radius-slider").show();
+		}
+		else if(e.name == "Cluster Map"){
+			$("#div-size-slider").show();
+			$("#div-radius-slider").hide();
+		}
+	}
+	
+	map.on('baselayerchange',changeBaseLayer);
+});
+
+</script>
+{% endblock %}

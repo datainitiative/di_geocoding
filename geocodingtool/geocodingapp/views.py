@@ -3,7 +3,6 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.template import RequestContext
 from django.db import models
-from django.db.models.loading import get_model
 from django.contrib import messages
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.forms import AuthenticationForm
@@ -13,6 +12,7 @@ from django.contrib.auth.models import Group
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 # python imports
 from zipfile import *
@@ -24,6 +24,7 @@ from util import *
 # Import from app
 from geocodingtool.settings import ROOT_APP_URL, STORAGE_ROOTPATH, STATIC_URL
 from geocodingtool.settings import GOOGLE_API_KEY, OSM_API_KEY, ARCGIS_API_KEY, BING_API_KEY, MAPBOX_API_KEY, MAPQUEST_API_KEY, GOOGLE_API_LIMIT
+from geocodingtool.settings import WHAT3WORDS_API_KEY
 from geocodingtool.settings import EXCEL_FILE_EXTENSIONS, CSV_FILE_EXTENSIONS
 from geocodingtool.settings import CF_GEOTABLE
 from geocodingtool.settings import SINGLE_GEOCODINGTASK_ID
@@ -188,6 +189,39 @@ def home(request):
         hp_template = "geocodingapp/home.html"
     else:      
         hp_template = "geocodingapp/home2.html"
+        
+    return render_to_response(
+        hp_template,
+        {"num_project": num_project,
+        "num_task": num_task,
+        "num_user_task": num_user_task,
+        "num_user_complete_tasks": num_user_complete_tasks,
+        "num_user_pending_tasks": num_user_pending_tasks,
+        "geocoder_status": geocoder_status,
+        "single_geocodingtask_id": SINGLE_GEOCODINGTASK_ID},
+        context_instance=RequestContext(request)
+        )
+        
+# Home page for FUN
+@login_required
+@render_to("geocodingapp/home2_fun.html")
+def home_fun(request):
+    projects = Project.objects.all()
+    num_project = len(projects)
+    tasks = Task.objects.all()
+    num_task = len(tasks)
+    geocoder_status = update_all_geocoders_usage()
+    user = User.objects.get(username=request.user)
+    user_tasks = Task.objects.filter(owner=user)
+    num_user_task = len(user_tasks)
+    user_complete_tasks = Task.objects.filter(owner=user).filter(has_result=True)
+    num_user_complete_tasks = len(user_complete_tasks)
+    user_pending_tasks = Task.objects.filter(owner=user).filter(has_result=False)
+    num_user_pending_tasks = len(user_pending_tasks)
+    if user.groups.filter(name="Admin View").exists():
+        hp_template = "geocodingapp/home_fun.html"
+    else:      
+        hp_template = "geocodingapp/home2_fun.html"
         
     return render_to_response(
         hp_template,
@@ -574,6 +608,9 @@ def api_geocoding(address,usage_id=None):
 def instant_geocoding(request):
     address = request.POST["address"]
     print "inst geo for address: ", address
+    # Calculate user geocoding usage
+    user = User.objects.get(username=request.user)
+    user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
     try:
         print "search in format address"
         get_address = FormattedAddress.objects.get(address=address)
@@ -603,6 +640,9 @@ def instant_geocoding(request):
         except:
             print "address fail"
             result = api_geocoding(address,None)
+            # Substract geocoding usage from user's geocoding balance
+            user_geocoding_limit.user_balance -=  1
+            user_geocoding_limit.last_geocoding_time = datetime.datetime.now()        
             print "api geoocding result: ", result
             point = json.dumps(result["point"])
             geocoder = result["geocoder"]
@@ -647,54 +687,201 @@ def instant_geocoding(request):
                 )
                 new_address.save()
 
+    user_geocoding_limit.save()
+    
+    return HttpResponse(json.dumps(response_data),content_type="application/json")
+
+@login_required
+def instant_geocoding_fun(request):
+    address = request.POST["address"]
+    print "inst geo FUN for address: ", address
+    # Calculate user geocoding usage
+    user = User.objects.get(username=request.user)
+    user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
+    try:
+        print "search in format address"
+        get_address = FormattedAddress.objects.get(address=address)
+        get_formatted_address = get_address
+        point = json.dumps([get_formatted_address.point.lat,get_formatted_address.point.lng])
+        geocoder = get_formatted_address.geocoder.name
+        confidence = get_formatted_address.confidence_level.score
+        response_data = {
+            'point': point,
+            'geocoder': geocoder,
+            'confidence': confidence
+        }
+    except:
+        print "format fail"
+        try:
+            print "search in address"
+            get_address = AddressInventory.objects.get(address=address)
+            get_formatted_address = get_address.formatted_address
+            point = json.dumps([get_formatted_address.point.lat,get_formatted_address.point.lng])
+            geocoder = get_formatted_address.geocoder.name
+            confidence = get_formatted_address.confidence_level.score
+            response_data = {
+                'point': point,
+                'geocoder': geocoder,
+                'confidence': confidence
+            }        
+        except:
+            print "address fail"
+            result = api_geocoding(address,None)
+            # Substract geocoding usage from user's geocoding balance
+            user_geocoding_limit.user_balance -=  1
+            user_geocoding_limit.last_geocoding_time = datetime.datetime.now()        
+            print "api geoocding result: ", result
+            point = json.dumps(result["point"])
+            geocoder = result["geocoder"]
+            confidence = result["confidence"]
+            response_data = {
+                'point': point,
+                'geocoder': geocoder,
+                'confidence': confidence
+            }
+            print "api response data: ", response_data
+            # Google Geocoder Usage
+            update_google_geocoder_usage(None,1,True)
+            point = result["point"]
+            print "point: ",point
+            # Save address to address inventory
+            if point != "Failed!":
+                point = Point(lat=point[0],lng=point[1])
+                point.save()
+                print "save point"
+                geocoder = Geocoder.objects.get(name=result['geocoder'])
+                confidence = ConfidenceLevel.objects.get(score=result['confidence'])
+                accuracy = result['accuracy']
+                formattedaddress = result['formattedaddress']
+                print "formatted address: ", formattedaddress
+                try:
+                    print "try get fortmat"
+                    formatted_address = FormattedAddress.objects.get(address=formattedaddress)
+                except:
+                    print "no format match, save new format address"
+                    formatted_address = FormattedAddress(
+                        address = formattedaddress,
+                        point = point,
+                        geocoder = geocoder,
+                        confidence_level = confidence,
+                        accuracy = accuracy
+                    )
+                    formatted_address.save()
+                print "save new address"
+                new_address = AddressInventory(
+                    address = address,
+                    formatted_address = formatted_address
+                )
+                new_address.save()
+
+    user_geocoding_limit.save()
+    
+    # get what3words coordinate words
+    str_lat = response_data['point'].split(", ")[0][1:]
+    str_lng = response_data['point'].split(", ")[1][:-1] 
+    
+    conn = HTTPSConnection("api.what3words.com")   
+    what3words_request = "/v2/reverse?coords=%s,%s&key=%s&lang=en&format=json&display=full" % (str_lat,str_lng,WHAT3WORDS_API_KEY)
+    conn.request("GET", what3words_request)
+    
+    res = conn.getresponse()
+    data = res.read()
+    what3words_returns = json.loads(data)
+    print response_data
+    response_data['words'] = what3words_returns['words']
+    print response_data
+    
     return HttpResponse(json.dumps(response_data),content_type="application/json")
 
 @login_required
 @render_to("geocodingapp/geocoding_setup.html")
 def geocoding_setup(request):
+    task_id = None
+    preview_table_headers = None
+    preview_table_content = None
+    error_msg = None
     if request.GET["task"]:
-        task_id = int(request.GET["task"])
-    # read task file
-    task = Task.objects.get(id=task_id)
-    file_path = task.file.path
-    file_ext = file_path[file_path.rfind("."):]
-    ## read excel file
-    if file_ext in EXCEL_FILE_EXTENSIONS:    
-        wb = load_workbook(file_path,read_only=True)
-        sheet_names = wb.get_sheet_names()
-        ws = wb[sheet_names[0]]
-        rownum = ws.get_highest_row()
-        colnum = ws.get_highest_column()
-        colletter = str(_get_column_letter(colnum))
-        preview_range = "A1:%s11" % colletter
-        preview_table = []
-        for row in ws.iter_rows(preview_range):
-            tmp_row = []
-            for cell in row:
-                if cell.value:
-                    tmp_row.append(cell.value)
-                else:
-                    tmp_row.append("")
-            preview_table.append(tmp_row)
-    ## read csv file
-    elif file_ext in CSV_FILE_EXTENSIONS:
-        preview_table = []
-        with open(file_path,'rb') as csvfile:
-            csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
-            for i in range(11):
-                preview_table.append(csvreader.next())
+        exceed_limit = False
+        user = User.objects.get(username=request.user) 
+        user_geocoding_limit = UserGeocodingLimit.objects.get_or_create(user=user)[0]
+        if user_geocoding_limit.last_geocoding_time:
+            d = datetime.datetime.now().date() - user_geocoding_limit.last_geocoding_time.replace(tzinfo=None).date()
+            if d.days >= 1:
+                # current date from last geocoding date is euqal or long than one day
+                # reset balance to 500
+                user_geocoding_limit.user_balance = MAX_GEOCODING_LIMIT
+                user_geocoding_limit.save()
+
+        gocoding_balance = user_geocoding_limit.user_balance
+        print "balance: ", gocoding_balance
+        if gocoding_balance == 0:
+            print "out of balance"
+            exceed_limit = True
+            error_msg = "You have exceeded <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                        "Your balance will be reset after 11:59pm today. " + \
+                        "Please try it again tomorrow."                
+        else:
+            task_id = int(request.GET["task"])
+            # read task file
+            task = Task.objects.get(id=task_id)
+            file_path = task.file.path
+            file_ext = file_path[file_path.rfind("."):]
+            ## read excel file
+            if file_ext in EXCEL_FILE_EXTENSIONS:    
+                wb = load_workbook(file_path,read_only=True)
+                sheet_names = wb.get_sheet_names()
+                ws = wb[sheet_names[0]]
+                rownum = ws.get_highest_row()
+                colnum = ws.get_highest_column()
+                colletter = str(_get_column_letter(colnum))
+                preview_range = "A1:%s%d" % (colletter,min(11,rownum))
+                preview_table = []
+                for row in ws.iter_rows(preview_range):
+                    tmp_row = []
+                    for cell in row:
+                        if cell.value:
+                            tmp_row.append(cell.value)
+                        else:
+                            tmp_row.append("")
+                    preview_table.append(tmp_row)
+            ## read csv file
+            elif file_ext in CSV_FILE_EXTENSIONS:
+                preview_table = []
+                with open(file_path,'rb') as csvfile:
+                    csvreader = csv.reader(csvfile,delimiter=',',quotechar='"')
+                    rownum = sum(1 for row in csvreader)
+                    csvfile.seek(0) # return to the top of file
+                    for i in range(min(11,rownum)):
+                        preview_table.append(csvreader.next())
+            else:
+                    print "file not supported"
+                    error_msg = "This file format is not supported. Please upload a new file."
+                    preview_table = None
+            if (rownum - 1) > gocoding_balance:
+                exceed_limit = True
+                error_msg = "Number of records exceeds <strong>%d</strong> geocoding limits today.<br/>" % MAX_GEOCODING_LIMIT + \
+                            "The file contains <strong>%d</strong> records. " % rownum + \
+                            "Your remaining balance for today is <strong>%d</strong>.</br>" % gocoding_balance + \
+                            "Your balance will be reset after 11:59pm today. " + \
+                            "Please try it again tomorrow."
+            if preview_table:
+                preview_table_headers = preview_table[0]
+                preview_table_content = preview_table[1:]
+            else:
+                preview_table_headers = None
+                preview_table_content = None
     else:
-        print "file not supported"
-        preview_table = None
-    if preview_table:
-        print preview_table
-        preview_table_headers = preview_table[0]
-        preview_table_content = preview_table[1:]
-    else:
-        preview_table_headers = None
-        preview_table_content = None
-    
+        exceed_limit = True
+        error_msg = "You don't have access to this page"
+#    class UserGeocodingLimit(models.Model):
+#    #    id = models.IntegerField(primary_key=True)
+#        user = models.ForeignKey(User)
+#        user_balance = models.IntegerField(default=500)
+#        last_geocoding_time = models.DateTimeField(auto_now=False, null=True)
+
     return {
+            'exceed_limit': exceed_limit,
+            'error_msg': error_msg,
             'task_id': task_id,
             'preview_table_headers': preview_table_headers,
             'preview_table_content': preview_table_content
@@ -713,7 +900,9 @@ def start_geocoding(request):
     result_headers = []
     if "label" in request.GET:
         if request.GET["label"] != 'None':
-            result_headers.append(request.GET["label"])    
+            result_headers.append(request.GET["label"])
+        else:
+            result_headers.append(request.GET["address"])
     if "address" in request.GET:
         if request.GET["address"] != 'None':
             result_headers.append(request.GET["address"])
@@ -794,6 +983,9 @@ def start_geocoding(request):
         
     if is_file_supported:
         # start geocoding
+        # Calculate user geocoding usage
+        user = User.objects.get(username=request.user) 
+        user_geocoding_limit = UserGeocodingLimit.objects.get(user=user)
         for result in result_list:
             address = result['address']        
             # Check if address exists
@@ -848,6 +1040,10 @@ def start_geocoding(request):
                     # Create New Google Geocoder Usage
                     google_usage = update_google_geocoder_usage(None,0,True)
                     tmp_result = api_geocoding(address,google_usage.id)
+                    # Substract geocoding usage from user's geocoding balance
+                    user_geocoding_limit.user_balance -=  1
+                    user_geocoding_limit.last_geocoding_time = datetime.datetime.now()
+                    user_geocoding_limit.save()
                     tmp_point = tmp_result["point"]
                     if tmp_point == "Failed!":
                         formatted_address = None
@@ -895,6 +1091,7 @@ def start_geocoding(request):
 
         task.has_result = True
         task.save()
+        user_geocoding_limit.save()
     
     redirect_url = "%s/geocoding/results?task=%d" % (ROOT_APP_URL,task_id)
     return HttpResponseRedirect(redirect_url)
@@ -937,6 +1134,75 @@ def no_cf_link(request,task_id):
 @login_required
 @render_to("geocodingapp/geocoding_results.html")
 def geocoding_result(request):
+    task_id = int(request.GET["task"])
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {
+            "task_id":task_id,
+            "task_title":task.description,
+            "task_results":task_results,
+            "g_points":points,
+            "data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@login_required
+@render_to("geocodingapp/fullscreen_map_results.html")
+def fullscreen_map_results(request,task_id):
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@xframe_options_exempt # allow this shared page to be embedded in iframe
+@render_to("geocodingapp/share_geocoding_results.html")
+def share_geocodingresults(request,task_id):
+    task = Task.objects.get(id=task_id)
+    task_results = GeocodingResult.objects.filter(task=task)
+    points = []
+    points_wlabels = []
+    return_task_results = []
+    for result in task_results:
+        rt = {
+                "id": result.id,
+                "name": result.name,
+                "address": result.address,
+                "location": {"lat": result.location.lat, "lng": result.location.lng}
+            }
+        return_task_results.append(return_task_results)
+        if result.location:
+            points.append([result.location.lat,result.location.lng])
+            points_wlabels.append([result.location.lat,result.location.lng,result.name])
+    return {"task_id":task_id,"task_results":task_results,"g_points":points,"data_points":json.dumps(points_wlabels).replace("'",r"\'")}
+
+@login_required
+@render_to("geocodingapp/geocoding_results_admin.html")
+def geocoding_result_admin(request):
     task_id = int(request.GET["task"])
     task = Task.objects.get(id=task_id)
     task_results = GeocodingResult.objects.filter(task=task)

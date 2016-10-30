@@ -67,11 +67,11 @@ WSGI_APPLICATION = 'geocodingtool.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dbname',
-        'USER': 'user',
-        'PASSWORD': 'pw',
-        'HOST': 'localhost',#'/opt/bitnami/postgresql' for aws
-        'PORT': '5432'        
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',#'/opt/bitnami/postgresql' for aws
+        'PORT': ''        
     }
 }
 
@@ -107,13 +107,13 @@ STATIC_ROOT_URL = '/geocodingtool'
 STATIC_URL = '%s/static/' % STATIC_ROOT_URL
 
 # use this for localhost
-STORAGE_ROOTPATH = 'C:/QLiu/Devl/di_geocoding/geocodingtool/geocodingapp/static/data/'
+STORAGE_ROOTPATH = ''
 # use this for server
 #STORAGE_ROOTPATH = '/home/bitnami/apps/django/django_projects/geocoding/geocodingtool/geocodingapp/static/data/'
 
 # Login URL
 LOGIN_URL = '/admin/login/' # use this for localhost
-#LOGIN_URL = '/geocoding/admin/login/'
+#LOGIN_URL = '/geocodingtool/admin/login/'
 
 # Use Bootstrap3 for Django
 ## Bootstrap3 config dict
@@ -183,10 +183,24 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger error'
 }
 
+## File Extensions
+EXCEL_FILE_EXTENSIONS = [".xlsx",".xlsm",".xltx",".xltm"]
+CSV_FILE_EXTENSIONS = [".csv"]
+
+## Community Facts Neighborhood Table
+CF_GEOTABLE = {
+    'db_table': "neighborhood_metro7county_geographyv3_2010",
+    'srid': "2232",
+    'col_id': "nhid",
+    'col_name': "nhname",
+    'cf_url_nbsummary': "http://denvermetrodata.org/neighborhood/"
+}
+
 ## Geocoder API Keys
 # Google: 2500 free requests per day; 10 requests per second.
 # g = geocoder.google('address',[key=])
-GOOGLE_API_KEY = "GOOGLE_API_KEY"
+GOOGLE_API_KEY = ""
+GOOGLE_API_LIMIT = 2500
 
 # OpenStreeMap: max of 1 request per second. No key needed.
 # g = geocoder.osm('address')
@@ -198,12 +212,28 @@ ARCGIS_API_KEY = ""
 
 # Bing: Public website: Max 125000 cumulative billable transactions within any 12-month period at no charge.
 # g = geocoder.bing('address',key=)
-BING_API_KEY = "BING_API_KEY"
+BING_API_KEY = ""
 
 # Mapbox: Free one geocode per request.
 # g = geocoder.mapbox('address',key=)
-MAPBOX_API_KEY = "MAPBOX_API_KEY"
+MAPBOX_API_KEY = ""
 
 # MapQuest: 15000 transactions per month. No bounding box, thus no confidence level.
 # g = geocoder.mapquest('address',key=)
-MAPQUEST_API_KEY = "MAPQUEST_API_KEY"
+MAPQUEST_API_KEY = ""
+
+# what3words API Key for user qliu@garycommunity.org
+WHAT3WORDS_API_KEY = ""
+
+# Project ID for one-time (single) geocoding task
+# use this for server
+#SINGLE_GEOCODINGTASK_ID = 12
+# use this for localhost
+SINGLE_GEOCODINGTASK_ID = 1
+
+## Limit Max File Upload Size to 5MB = 5242880 bytes
+#MAX_UPLOAD_SIZE = 5242880
+MAX_UPLOAD_SIZE = 1048576 # 1MB
+MAX_GEOCODING_LIMIT = 500
+
+from settings_local import *

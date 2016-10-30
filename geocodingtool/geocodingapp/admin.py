@@ -5,6 +5,7 @@ from django.utils.html import mark_safe
 
 from geocodingtool.settings import ADMIN_ROOT_URL, ROOT_APP_URL
 from geocodingapp.models import *
+from geocodingapp.forms import *
 
 class StateAdmin(admin.ModelAdmin):
     fields = ['geoid','state']
@@ -89,6 +90,8 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ['project','project__category','has_result','owner']
     readonly_fields = ['initiate_date','owner']
     search_fields = ('description','project__title')
+    
+    form = TaskForm
 
     def save_model(self,request,obj,form,change):
         # when adding new Task, set owner to be logged in user by default
@@ -127,3 +130,9 @@ class GeocoderUsageAdmin(admin.ModelAdmin):
     readonly_fields = ['last_geocoding_time']
     list_display = ['id','geocoder','geocoding_record_num','last_geocoding_time','has_expired']
 admin.site.register(GeocoderUsage,GeocoderUsageAdmin)
+
+class UserGeocodingLimitAdmin(admin.ModelAdmin):
+    fields = ['user','user_balance','last_geocoding_time']
+    readonly_fields = ['last_geocoding_time']
+    list_display = ['id','user','user_balance','last_geocoding_time']
+admin.site.register(UserGeocodingLimit,UserGeocodingLimitAdmin)

@@ -1,0 +1,209 @@
+{% extends "admin/base_site_share.html" %}
+{% load i18n admin_static bootstrapped_goodies_tags %}
+{% load custom_filter %}{% load custom_tag %}
+{% block title %}Geocoding | Geocoding Tool{% endblock %}
+{% block extrastyle %}
+<!--<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />-->
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.css" />
+<!-- Esri Leaflet Geocoder -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.css">
+<!-- Prune Cluster -->
+<link rel="stylesheet" href="{% static 'prunecluster/LeafletStyleSheet.css' %}">
+<!-- Bootstrap-Slider -->
+<link rel="stylesheet" href="{% static 'bootstrap-slider/css/bootstrap-slider.min.css' %}">
+<!-- Enjoyhint style -->
+<link rel="stylesheet" href="{% static 'enjoyhint/enjoyhint.min.css' %}" />
+<style>
+#main-content, #map {
+	width: 100%;
+	height: 100%;
+}
+.leaflet-left, .leaflet-right {
+	margin: 20px!important;
+}
+.size-slider {
+    display: block;
+    width: 340px;
+    position: absolute;
+    right: 150px;
+    top: 20px;
+    margin-top: 12px;
+    margin-right: 12px;
+    padding: 5px;
+    background-color: #FFF;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+    border-radius: 4px;
+    z-index: 800;
+}
+.my-control-left {
+    padding-left: 5px!important;
+    padding-right: 0px!important;
+}
+.my-control-right {
+    padding-left: 0px!important;
+    padding-right: 10px!important;
+}
+.slider {
+    width: 95%!important;
+    float: right!important;
+}
+#input-cluster-size-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-size-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
+#input-cluster-radius-slider .slider-handle{
+    background: #009FE3;
+}
+#input-cluster-radius-slider .slider-selection {
+    background: #E8F6FC; /*#54CBEC;*/ /*default #BABABA;*/
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="main-content" class="col-lg-12">
+	<div id="map"></div>
+	<div id="div-size-slider" class="size-slider">
+		<span class="col-sm-3 pull-left my-control-left">Cluster Size</span>
+		<div class="col-sm-9 pull-right my-control-right">
+			<input id="input-cluster-size" data-slider-id='input-cluster-size-slider' type="text" data-slider-min="20" data-slider-max="500" data-slider-step="20" data-slider-value="120">
+		</div>                               
+	</div>
+	<div id="div-radius-slider" class="size-slider">
+		<span class="col-sm-3 pull-left my-control-left">Radius Size</span>
+		<div class="col-sm-9 pull-right my-control-right">
+			<input id="input-radius-size" data-slider-id='input-radius-size-slider' type="text" data-slider-min="5" data-slider-max="50" data-slider-step="5" data-slider-value="25">
+		</div>                               
+	</div>
+</div>
+{% endblock %}
+
+{% block bottomjs %}
+<script src="http://cdn.leafletjs.com/leaflet/v1.0.0-beta.2/leaflet.js"></script>
+<!-- Esri Leaflet -->
+<script src="//cdn.jsdelivr.net/leaflet.esri/2.0.0-beta.6/esri-leaflet.js"></script>
+<!-- Esri Leaflet Geocoder -->
+<script src="//cdn.jsdelivr.net/leaflet.esri.geocoder/2.0.0/esri-leaflet-geocoder.js"></script>
+<!-- Prune Cluster -->
+<script src='{% static "prunecluster/PruneCluster.js"%}'></script>
+<!-- Leaflet Heat -->
+<script src='{% static "leaflet-heat/leaflet-heat.js"%}'></script>
+<!-- JQuery Cookie -->
+<script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+<!-- Bootstrap-Slider -->
+<script src="{% static 'bootstrap-slider/bootstrap-slider.min.js' %}"></script>
+<!-- page JS -->
+<script>
+$(document).ready(function() {
+	// Page JS
+	$("#div-radius-slider").hide();
+	
+	// Map JS
+    var map = L.map('map',{maxZoom:19}).setView([39.7645187,-104.9951944], 11);
+	
+	var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+		subdomains: 'abcd',
+		maxZoom: 19
+	}).addTo(map);
+	
+	var Esri_WorldStreetMap = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+		attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+	});
+    
+    // ESRI Leaflet
+    var arcgisOnline = L.esri.Geocoding.arcgisOnlineProvider();
+    // create the geocoding control and add it to the map
+    var searchControl = L.esri.Geocoding.geosearch({
+        providers: [arcgisOnline],
+        position: 'topright'
+    }).addTo(map);
+    // create an empty layer group to store the results and add it to the map
+    var results = L.layerGroup().addTo(map);
+    // listen for the results event and add every result to the map
+    searchControl.on("results", function(data) {
+        results.clearLayers();
+        for (var i = data.results.length - 1; i >= 0; i--) {
+            results.addLayer(L.marker(data.results[i].latlng));
+        };
+    });
+    
+    // Map Functions
+    var map_points = {{g_points}};
+    var data_points = jQuery.parseJSON('{{data_points|safe}}');
+    map.fitBounds(map_points,{padding:[2,2]});
+    // Prune Cluster
+    var leafletView = new PruneClusterForLeaflet();
+    // Set custom marker icon and create on the fly
+    function createIcon(data,category){
+        var myMarkerIconSrc = '{% static "img/map_marker_single.png"%}';
+        var myMarkerIconSrcRetina = '{% static "img/map_marker_single@2x.png"%}';
+        var myMarkerIcon = L.icon({
+            iconUrl: myMarkerIconSrc,
+            iconRetinaUrl: myMarkerIconSrcRetina,
+            iconSize: [32,34],
+			iconAnchor: [12,33],
+            popupAnchor: [1,-28],
+        });
+        return myMarkerIcon;
+    }
+    var markers = [];
+    $.each(data_points,function(index,p){
+        var marker = new PruneCluster.Marker(p[0],p[1]);
+        marker.data.icon = createIcon; // create icon on the fly
+        marker.data.popup = p[2];
+        markers.push(marker);
+        leafletView.RegisterMarker(marker);
+    });
+    map.addLayer(leafletView);
+    
+    // dynamic cluster size
+    $("#input-cluster-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateSize = function(){
+        leafletView.Cluster.Size = parseInt(this.value);
+        leafletView.ProcessView();
+    };
+    $("#input-cluster-size").change(updateSize);
+	
+	// heatmap
+	var heatMap = L.heatLayer(map_points,{radius:25,max:0.05,blur:10});
+	// dynamic radius size
+    $("#input-radius-size").slider({
+        formatter: function(value){
+            return value;
+        }
+    });
+    var updateRadiusSize = function(){
+		heatMap.setOptions({radius:parseInt(this.value),max:0.05,blur:10});
+		heatMap.redraw();
+    };
+    $("#input-radius-size").change(updateRadiusSize);
+	
+	var baseMaps = {
+		"Cluster Map": leafletView,
+		"Heat Map": heatMap
+	};
+	var layerControl = L.control.layers(baseMaps).addTo(map);
+	
+	function changeBaseLayer(e,layer,name){
+		if (e.name == "Heat Map"){
+			$("#div-size-slider").hide();
+			$("#div-radius-slider").show();
+		}
+		else if(e.name == "Cluster Map"){
+			$("#div-size-slider").show();
+			$("#div-radius-slider").hide();
+		}
+	}
+	
+	map.on('baselayerchange',changeBaseLayer);
+});
+
+</script>
+{% endblock %}

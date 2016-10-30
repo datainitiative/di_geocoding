@@ -53,28 +53,10 @@
 {% endif %}
 {% if user|has_group:"Staff Admin" %}
 <li><a href="{% url 'admin:index' %}{{app_label}}/">{{app_label|capfirst}} Admin</a></li>
-{% endif %}
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/">Project</a></li>
 <li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/task/">Task</a></li>
-<!--
-{% if user|has_group:"MHC Admin" %}
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/">Admin</a></li>
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/indicator/">Indicator (Admin)</a></li>
 {% endif %}
-<li><a href="{% setting 'ROOT_APP_URL' %}/indicator/">Indicator</a></li>
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/workplanarea/">Workplan Area</a></li>
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/mhcactivity/">MHC Activity</a></li>
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/organization/">Organization</a></li>
-<li><a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/organizationactivity/">Organization Activity</a></li>
-<li>
-{% if user|has_group:"Non-profit Staff" %}
-	<a href="{% setting 'ROOT_APP_URL' %}/output/report/">
-{% else %}
-  <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/mhcdashboardapp/output/">
-{% endif %}
-  Output</a>
-</li>
--->
+<li><a href="{% setting 'ROOT_APP_URL' %}/dashboard/">Dashboard</a></li>
 </ul>
 {% endblock %}
 {% endif %}
@@ -84,7 +66,7 @@
 <div id="content-navbar-collapse" class="navbar-collapse collapse">
   <ul class="nav navbar-nav navbar-right">
     {% block object-tools-items %}
-	{% if user|has_group:"Superuser" or user|has_group:"MHC Admin" %}
+	{% if user|has_group:"Superuser" or user|has_group:"Staff Admin" %}
 		<li>
 			{% url opts|admin_urlname:'history' original.pk|admin_urlquote as history_url %}
 			<a role="button" href="{% add_preserved_filters history_url %}" class="historylink">{% trans "History" %}</a>
@@ -127,7 +109,11 @@
             <h3 class="page-header">Project #{{original.id}}</h3>
         {% endif %}
         {% if opts.model_name == "task" and not add %}
-        <h3 class="page-header">Task #{{original.id}} | Under project <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/{{original.project.id}}" target="_blank">{{original.project.title}}</a></h3>
+        <h3 class="page-header">Task #{{original.id}}
+			{% if user|has_group:"Superuser" or user|has_group:"Staff Admin" or user|has_group:"Staff" %}
+				 | Under project <a href="{% setting 'ADMIN_ROOT_URL' %}/admin/geocodingapp/project/{{original.project.id}}" target="_blank">{{original.project.title}}</a>
+			{% endif %}
+		</h3>
         {% endif %}
 
         {% block field_sets %}
@@ -314,6 +300,13 @@
 			}
 		});
     </script>
+	{% if user|has_group:"CfD Test" %}
+		<script>
+			$(document).ready(function(){
+				$(".field-project").hide();
+			});
+		</script>
+	{% endif %}
 {% endif %}
 
 {% if opts.model_name == "task" and not add %}
@@ -324,7 +317,7 @@
 	<script src="{% static 'sitetour/sitetour.js' %}"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            $("p.file-upload").find("a").removeAttr("href").css('color', '#666').css('text-decoration', 'none');
+            $(".field-file").find("a").removeAttr("href").css('color', '#666').css('text-decoration', 'none');
             // check if cookei exists
 			var visited = $.cookie('visited-post-add-task');
 			if (visited == null){
@@ -335,5 +328,12 @@
 			}
         });
     </script>
+	{% if user|has_group:"CfD Test" %}
+		<script>
+			$(document).ready(function(){
+				$(".field-project").hide();
+			});
+		</script>
+	{% endif %}
 {% endif %}
 {% endblock %}

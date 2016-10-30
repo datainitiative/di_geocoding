@@ -33,7 +33,7 @@
 
 {% block content %}
 <div id="content-main">
-	<h3 class="page-header">{{user.first_name}}'s Dashboard</h3>
+	<h3 class="page-header">{% if user.first_name %}{{user.first_name}}{% else %}{{user.username}}{% endif %}'s Dashboard</h3>
 	
 	<!-- Task List -->
 	<div class="row">

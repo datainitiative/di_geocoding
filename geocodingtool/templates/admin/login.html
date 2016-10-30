@@ -1,91 +1,240 @@
-{% extends "admin/base_site.html" %}
 {% load i18n admin_static bootstrapped_goodies_tags %}
-{% load custom_tag %}
-{% block nav-global %}{% endblock %}
+{% load custom_filter %}{% load custom_tag %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
-{% block navbar %}{% endblock %}
-{% block breadcrumbs %}{% endblock %}
-{% block extrastyle %}
-<style type="text/css">
-@media (min-width: 768px) {
-.form-signin {
-    max-width: 380px;
-    margin: 0 auto 20px;
-    background-color: #fff;
-    border: 1px solid #e5e5e5;
-    -webkit-border-radius: 5px;
-        -moz-border-radius: 5px;
-        border-radius: 5px;
-    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-        -moz-box-shadow: 0 1px 2px rgba(0,0,0,.05);
-        box-shadow: 0 1px 2px rgba(0,0,0,.05);
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>Login | Colorado Data Locator</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+* {
+  border-radius: 0 !important;
+}	
+h1	 {
+	color:white;
+	font-family: Corbel;
 }
-.form-signin-inner{
-    padding: 9px 29px 29px;
+h2 {
+	font-family: Corbel;
 }
-.form-signin .form-signin-heading, .form-signin .checkbox, .form-signin h2 {
-    margin-bottom: 30px;
+p {
+	font-size: 16px;
+	color:white;
+	font-family: Corbel;
 }
-.form-signin .form-actions{
-    margin: 0;
+.divider h1, h2{
+	font-weight: 800;
 }
-#id_username, #id_password{
-    display: block;
-    font-size: 16px;
-    height: 44px;
+.container{
+	padding: 0;
+}
+.navbar-fixed-top, .navbar-fixed-bottom, .navbar-static-top, .container {
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom:0;
+    }
+.garyLogo{
+	height: 150px;
+	float: right;
+}
+.shiftLogo{
+	height: 150px;
+}
+.cdlLogo{
+	height: 200px;
+}
+	
+.firstRow{
+/*	background-color: orange;*/
+	height: 100px;
+
+}
+.headerMiddle{
+	padding-left: 0px;
+    margin-left: -10px;
+}
+.headerLeft{
+}
+
+.loginSquare{
+	height: 325px;
+	width: 300px ;
+	background-color: #E8E8E8;
+	margin:150px 45px 150px 100px;
+	float: left;
+	padding-right: 10px;
+}
+.loginButton{
+	background-color: #FA4616;
+	color:white;
+	width: 100px;
+	margin:5px	0;
+	border: none;
+}
+.signupButton{
+	background-color: #6AD1E3;
+	color:white;
+	display: block;	
+	width: 100px;	
+	margin:5px	0;
+	border: none;
+}
+.helloBack{
+	background-color: #6AD1E3;
+	height: 400px;
+	padding-left: 20px;	
+	margin:100px 0 0 0;
+	top:50%;
+}
+
+.learnmoreButton{
+	background-color: #00587C;
+	color:white;
+	border:none;
+}
+.fRight{
+	float: right;
+}
+.rButton{
+	padding-right: 0;
+}
+.loginInput{
+	width: 150px;
+	float: right;
+	margin:5px	0;	
+
+}
+.divider{	
+	border-right: 1px solid white;
+	margin: 60px 0 0 0;	
+	padding-right: 50px;	
+}
+.thinText{
+	font-size: 40px;
+	font-weight:100;
+	color:white;
+}
+.locationText{
+	font-size: 20px;
+	font-weight:bold;
+	color:white;
+}
+.tinyText{
+	font-size: 12px;
+	color:#00587C;
+}
+.locationPosition{
+	margin: 120px 0 50px 0px;
+}
+.loginPosition{
+	margin-top:20px;
+}
+.glyphicon-map-marker{
+	font-size: 75px;
+	color:#9bd9e3;
+	padding: 50% 0;	
+}
+
+@media (min-width: 1200px){
+	.container {
     width: 100%;
+    margin:0;
+	}
 }
-}
+
 </style>
-{% endblock %}
+</head>
 
-{% block content %}
-<div id="content-main">
-<form class="form-signin" action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
-  <div class="form-signin-inner">
-  {% blocktrans %}<h2>Login</h2>{% endblocktrans %}
-  {% if form.errors and not form.non_field_errors and not form.this_is_the_login_form.errors %}
-    <div class="alert alert-danger">
-       {% blocktrans count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktrans %}
-    </div>
-  {% endif %}
-  {% if form.non_field_errors or form.this_is_the_login_form.errors %}
-    {% for error in form.non_field_errors %}
-    <div class="alert alert-danger">
-      {{ error }}
-    </div>
-    {% endfor %}
-  {% endif %}
-  <div class="form-group">
-    <label for="id_username" class="required">{% trans form.username.label %}</label>
-    {% if not form.this_is_the_login_form.errors %}<p class="text-danger">{{ form.username.errors|striptags }}</p>{% endif %}
-    {% dab_field_rendering form.username %}
-  </div>
-  <div class="form-group">
-    <label for="id_password" class="required">{% trans form.password.label %}</label>
-    {% if not form.this_is_the_login_form.errors %}<p class="text-danger">{{ form.password.errors|striptags }}</p>{% endif %}
-    {% dab_field_rendering form.password %}
-    <input type="hidden" name="this_is_the_login_form" value="1" />
-    <input type="hidden" name="next" value="{{ next }}" />
-  </div>
-  {% url 'admin_password_reset' as password_reset_url %}
-  {% if password_reset_url %}
-  <div class="form-group">
-    <div class="controls col-sm-offset-2 col-sm-10">
-        <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
-    </div>
-  </div>
-  {% endif %}
-  <div class="form-actions clearfix">
-      <input type="submit" value="{% trans 'Log in' %}" class="btn btn-lg btn-primary btn-block" />
-  </div>
-  </div>
-</form>
+<body>
+<!-- <div class="container"> -->
+	<div class="row ">
+		<div class="col-md-12 firstRow">
+			<div class="col-md-4">
+				<div class="pull-right">
+					<div class="col-md-6 ">
+						<img class="garyLogo" src="{% static 'img/imgCFD/placeholdLogoGARY.png' %}">
+					</div>
+					<div class="col-md-6 headerLeft">
+						<img class="shiftLogo" src="{% static 'img/imgCFD/placeholderSHIFT.png' %}">
+					</div>
+				</div>
+			</div>
+			<div class="col-md-8 headerMiddle">
+				<img class="cdlLogo" src="{% static 'img/imgCFD/placeholderCDL.png' %}">
+			</div>
+		</div>
+	</div>
+	<div class="row ">
+			<div class="col-md-4">
+				<div class="loginSquare pull-right">
+					<div class="col-md-12 loginPosition">
+						<h2 class="fRight">Login</h2>
+					</div>
+					<div class="col-md-12">
+						<form class="form-signin fRight" action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+							<div class="form-group">
+							{% if not form.this_is_the_login_form.errors %}<p class="text-danger">{{ form.username.errors|striptags }}</p>{% endif %}
+							{% dab_field_rendering form.username %}
+							</div>
+							<div class="form-group">
+							{% if not form.this_is_the_login_form.errors %}<p class="text-danger">{{ form.password.errors|striptags }}</p>{% endif %}
+							{% dab_field_rendering form.password %}
+							<input type="hidden" name="this_is_the_login_form" value="1" />
+							<input type="hidden" name="next" value="{{ next }}" />
+							</div>
+							<div class="col-md-12 rButton"> 
+								<div class="form-actions clearfix">
+									<input type="submit" value="{% trans 'Log in' %}" class="btn btn-lg btn-default loginButton fRight" />
+								</div>
+							</div>
+							<div class="col-md-12 rButton">
+								<div class="form-actions clearfix">
+									<input type="submit" value="{% trans 'Sign up' %}" class="btn btn-lg btn-default signupButton fRight">
+								</div>
+							</div>
+						</form>
+					</div>
 
-<script type="text/javascript">
-$(document).ready(function() {
-  $('#id_username').attr('autocapitalize', 'off').focus();
-})
-</script>
+					
+				</div>
+			</div>
+			<div class="col-md-7 helloBack">
+				<div class="col-md-7 divider">
+					<h1>Hello!</h1>
+					<p>Welcome to Colorado Data Locator</p>
+					<p>The CDL is avgeocoding tool that facilitates spatial analysis to locate addresses using a series of online geocoding APIs.</p>
+					<p>In simple terms we make the task of mapping your data easier and allow you to do more with it.</p>
+					<p class="tinyText"><i>This project is brought to you by Shift Research Lab with help from Code for Denver</i></p>
+					<button type="submit" class="btn btn-default learnmoreButton">learn more</button>	
+				</div>
+				<div class="col-md-5 locationPosition">
+					<div class="col-md-3">
+						<div class="glyphicon glyphicon-map-marker"></div>
+					</div>
+					<div class="col-md-9">
+						<div class="locationText">DENVER, COLORADO</div>
+						<div class="thinText">Lattitude</div>
+						<div class="thinText">Longitude</div>
+					</div>
+				
+				</div>
+			</div>
+	<!-- </div> -->
 </div>
-{% endblock %}
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+		  $('#id_username').attr('autocapitalize', 'off').focus();
+		})
+	</script>
+
+  </body>
+</html>
